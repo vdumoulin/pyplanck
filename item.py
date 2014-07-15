@@ -47,6 +47,16 @@ class Item(object):
         self.category = category
         self.shortcut = shortcut
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return (self.barcode + "|" + self.name + "|" + self.category + "|" +
+                str(self.price))
+
     def __eq__(self, other):
         if type(other) == type(self) and other.barcode == self.barcode:
             return True
