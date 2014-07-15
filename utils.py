@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __authors__ = "Vincent Dumoulin"
 __copyright__ = "Copyright 2014, Vincent Dumoulin"
 __credits__ = ["Vincent Dumoulin"]
