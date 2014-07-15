@@ -97,6 +97,47 @@ def check_is_valid_quantity_delta(delta):
         raise ValueError("quantity variation must be at least 1")
 
 
+def check_is_valid_employee_name(employee_name):
+    """
+    Checks that `employee_name` is a valid employee name, and raises an error
+    otherwise. Validity conditions are defined in `check_is_valid_name_string`.
+    """
+    check_is_valid_name_string(name_string=employee_name,
+                               string_type="employee name")
+
+
+def check_is_valid_employee_barcode(employee_barcode):
+    """
+    Checks that `employee_barcode` is a valid employee barcode, and raises an
+    error otherwise. Validity conditions are defined in
+    `check_is_valid_name_string`.
+    """
+    check_is_valid_name_string(name_string=employee_barcode,
+                               string_type="employee barcode")
+
+
+def check_is_valid_employee_code(employee_code):
+    """
+    Checks that `employee_code` is a valid employee code, and raises an error
+    otherwise. Validity conditions are defined in `check_is_valid_name_string`.
+    """
+    check_is_valid_name_string(name_string=employee_code,
+                               string_type="employee code")
+
+
+def check_is_valid_employee_level(employee_level):
+    """
+    Checks that `employee_level` is a valid employee level, and raises an error
+    otherwise.
+
+    A valid employee level is an int in {0, 1, 2}.
+    """
+    if type(employee_level) is not int:
+        raise ValueError("employee level must be an int")
+    if employee_level not in {0, 1, 2}:
+        raise ValueError("employee level must be in {0, 1, 2}")
+
+
 def check_is_valid_file_path(file_path, file_type="file"):
     """
     Checks that `file_path` is a valid file path, and raises an error
