@@ -10,8 +10,9 @@ __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
 from nose.tools import raises
-from utils import (check_is_valid_name_string, check_is_valid_item_price,
-                   check_is_valid_item_quantity, check_is_valid_quantity_delta)
+from utils import (check_is_valid_name_string, check_is_valid_item_shortcut,
+                   check_is_valid_item_price, check_is_valid_item_quantity,
+                   check_is_valid_quantity_delta)
 
 
 def test_check_is_valid_name_string_accepts_str():
@@ -26,6 +27,10 @@ def test_check_is_valid_name_string_rejects_empty_str():
 @raises(ValueError)
 def test_check_is_valid_name_string_rejects_non_str():
     check_is_valid_name_string(3)
+
+
+def test_check_is_valid_item_shortcut_accepts_none():
+    check_is_valid_item_shortcut(None)
 
 
 def test_check_is_valid_item_price_accepts_int():

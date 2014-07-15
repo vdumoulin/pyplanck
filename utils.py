@@ -53,8 +53,9 @@ def check_is_valid_item_shortcut(item_shortcut):
     Checks that `item_shortcut` is a valid item shortcut, and raises an error
     otherwise. Validity conditions are defined in `check_is_valid_name_string`.
     """
-    check_is_valid_name_string(name_string=item_shortcut,
-                               string_type="item shortcut")
+    if item_shortcut is not None:
+        check_is_valid_name_string(name_string=item_shortcut,
+                                   string_type="item shortcut")
 
 
 def check_is_valid_item_price(item_price):
