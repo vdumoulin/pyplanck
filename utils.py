@@ -134,7 +134,7 @@ def check_is_valid_employee_level(employee_level):
     """
     if type(employee_level) is not int:
         raise ValueError("employee level must be an int")
-    if employee_level not in {0, 1, 2}:
+    if employee_level not in (0, 1, 2):
         raise ValueError("employee level must be in {0, 1, 2}")
 
 
