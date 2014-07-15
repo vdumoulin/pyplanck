@@ -10,9 +10,11 @@ __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
 from nose.tools import raises
-from utils import (check_is_valid_name_string, check_is_valid_item_shortcut,
-                   check_is_valid_item_price, check_is_valid_item_quantity,
-                   check_is_valid_quantity_delta)
+from pyplanck.utils import (check_is_valid_name_string,
+                            check_is_valid_item_shortcut,
+                            check_is_valid_item_price,
+                            check_is_valid_item_quantity,
+                            check_is_valid_quantity_delta)
 
 
 def test_check_is_valid_name_string_accepts_str():

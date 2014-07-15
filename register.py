@@ -10,10 +10,10 @@ __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
 import io, logging
-from item import Item
-from employee import Employee
-from utils import (check_is_valid_menu_file_path,
-                   check_is_valid_employees_file_path)
+from pyplanck.item import Item
+from pyplanck.employee import Employee
+from pyplanck.utils import (check_is_valid_menu_file_path,
+                            check_is_valid_employees_file_path)
 
 
 class Register(object):
