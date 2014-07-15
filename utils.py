@@ -6,6 +6,8 @@ __license__ = "GPL v2"
 __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
+import os
+
 
 def check_is_valid_name_string(name_string, string_type="name string"):
     """
@@ -92,3 +94,30 @@ def check_is_valid_quantity_delta(delta):
         raise ValueError("quantity variation must be an int")
     if delta < 1:
         raise ValueError("quantity variation must be at least 1")
+
+
+def check_is_valid_file_path(file_path, file_type="file"):
+    """
+    Checks that `file_path` is a valid file path, and raises an error
+    otherwise.
+    """
+    if not os.path.exists(file_path):
+        raise ValueError("path for " + file_type + " file does not exist")
+
+
+def check_is_valid_menu_file_path(menu_file_path, file_type="menu"):
+    """
+    Checks that `menu_file_path` is a valid menu file path, and raises an error
+    otherwise.
+    """
+    check_is_valid_file_path(file_path=menu_file_path, file_type="menu")
+
+
+def check_is_valid_employees_file_path(employees_file_path,
+                                       file_type="employees"):
+    """
+    Checks that `employees_file_path` is a valid employees file path, and
+    raises an error otherwise.
+    """
+    check_is_valid_file_path(file_path=employees_file_path,
+                             file_type="employees")
