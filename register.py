@@ -326,6 +326,72 @@ class Register(object):
 
         return list(set(employees_list))
 
+    def _load_register_count(self, file_path):
+        """
+        Loads and returns the register count.
+
+        Parameters
+        ----------
+        file_path : str
+            Path to the register count file
+        """
+        if not os.path.isfile(file_path):
+            register_count = 0.0
+            with io.open(file_path, 'wb') as f:
+                data = struct.pack('d', register_count)
+                f.write(data)
+            logging.warning("register count file not found, creating one " +
+                            "with value 0.0 at " +
+                            os.path.abspath(file_path))
+        else:
+            with io.open(file_path, 'rb') as f:
+                (register_count, ) = struct.unpack('d', f.read(8))
+        return register_count
+
+    def _add_to_register_count(self, amount):
+        """
+        Adds an amount to the register count.
+
+        Parameters
+        ----------
+        amount : float
+            Amout to add
+        """
+        self.register_count += amount
+        self._update_register_count()
+
+    def _substract_from_register_count(self, amount):
+        """
+        Substracts an amount from the register count.
+
+        Parameters
+        ----------
+        amount : float
+            Amout to substract
+        """
+        # The register amount cannot go negative because it is supposed to
+        # represent the quantity of physical money in the register.
+        if amount > self.register_count:
+            raise ValueError("cannot substract amount (" + str(amount) + ") " +
+                             "greater than register count (" +
+                             str(self.register_count) + ")")
+        self.register_count -= amount
+        self._update_register_count()
+
+    def _update_register_count(self):
+        """
+        Writes the register count to file in order to have a persistent state.
+        """
+        with io.open(self.register_count_file_path, 'wb') as f:
+            data = struct.pack('d', self.register_count)
+            f.write(data)
+
+    def _log_order(self):
+        """
+        WRITEME
+        """
+        pass
+
 
 if __name__ == "__main__":
     register = Register("sample_menu.txt", "sample_employees.txt")
