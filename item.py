@@ -69,24 +69,23 @@ class Item(object):
 
     def make_menu_item(self):
         return MenuItem(name=self.name, price=self.price, barcode=self.barcode,
-                        category=self.category, shortcut=self.shortcut,
                         quantity=0)
 
 
-class MenuItem(Item):
+class MenuItem(object):
     """
     WRITEME
     """
-    def __init__(self, name, price, barcode, category="General",
-                 shortcut=None, quantity=0):
-        # Initialize super-class
-        super(MenuItem, self).__init__(name=name, price=price, barcode=barcode,
-                                       category=category, shortcut=shortcut)
-        # Input sanitization
-        if type(quantity) is not int:
-            raise ValueError("item quantity must be an int")
-        if quantity < 0:
-            raise ValueError("item quantity must be positive")
+    def __init__(self, name, price, barcode, quantity=0):
+        # Input sanitizing
+        check_is_valid_item_name(item_name)
+        check_is_valid_item_price(price)
+        check_is_valid_item_barcode(barcode)
+        check_is_valid_item_quantity(quantity)
+
+        self.name = name
+        self.price = price
+        self.barcode = barcode
         self.quantity = quantity
 
     def __eq__(self, other):
@@ -96,9 +95,14 @@ class MenuItem(Item):
         else:
             return False
 
-    def make_menu_item(self):
-        raise NotImplementedError("MenuItem does not implement " +
-                                  "`make_menu_item`. Only Item does.")
+    def get_name(self):
+        return self.name
+
+    def get_price(self):
+        return self.price
+
+    def get_barcode(self):
+        return self.barcode
 
     def get_quantity(self):
         return self.quantity
@@ -107,17 +111,11 @@ class MenuItem(Item):
         return self.quantity == 0
 
     def add(self, quantity=1):
-        if type(quantity) is not int:
-            raise ValueError("added quantity must be an int")
-        if quantity < 1:
-            raise ValueError("added quantity must be at least 1")
+        check_is_valid_quantity_delta(quantity)
         self.quantity += quantity
 
     def sub(self, quantity=1):
-        if type(quantity) is not int:
-            raise ValueError("substracted quantity must be an int")
-        if quantity < 1:
-            raise ValueError("substracted quantity must be at least 1")
+        check_is_valid_quantity_delta(quantity)
         if self.quantity < quantity:
             raise ValueError("substracted quantity must not be greater than " +
                              "item quantity (" + str(self.get_quantity()) +
