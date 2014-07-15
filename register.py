@@ -394,4 +394,10 @@ class Register(object):
 
 
 if __name__ == "__main__":
-    register = Register("sample_menu.txt", "sample_employees.txt")
+    register = Register("sample_menu.txt", "sample_employees.txt",
+                        "sample_register_count.bin")
+    register.login_employee('2222')
+    print register.get_register_count()
+    register.logout_employee()
+    register.login_employee('1111')
+    print register.get_register_count()
