@@ -44,7 +44,7 @@ class Item(object):
         self.price = price
         self.barcode = barcode
         self.category = category
-        self.quantity = quantity
+        self.shortcut = shortcut
 
     def __eq__(self, other):
         if type(other) == type(self) and other.barcode == self.barcode:
