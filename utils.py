@@ -16,7 +16,7 @@ def check_is_valid_name_string(name_string, string_type="name string"):
 
     A valid name string must be a non-empty string.
     """
-    if type(name_string) is not str:
+    if type(name_string) not in (str, unicode):
         raise ValueError(string_type + " must be a string")
     if len(name_string) == 0:
         raise ValueError(string_type + " must not be empty")
