@@ -1,3 +1,7 @@
+from utils import (check_is_valid_item_name, check_is_valid_item_price,
+                   check_is_valid_item_barcode, check_is_valid_item_category,
+                   check_is_valid_item_shortcut)
+
 class Item(object):
     """
     Abstract item class used in the menu.
@@ -19,14 +23,11 @@ class Item(object):
     def __init__(self, name, price, barcode, category="General",
                  shortcut=None):
         # Input sanitizing
-        if type(name) is not str:
-            raise ValueError("item name must be a string")
-        if type(price) not in (float, int):
-            raise ValueError("item price must be either float or int")
-        if price < 0:
-            raise ValueError("item price must be positive")
-        if type(barcode) is not str:
-            raise ValueError("item barcode must be a string")
+        check_is_valid_item_name(name)
+        check_is_valid_item_price(price)
+        check_is_valid_item_barcode(barcode)
+        check_is_valid_item_category(category)
+        check_is_valid_item_shortcut(shortcut)
 
         self.name = name
         self.price = price
