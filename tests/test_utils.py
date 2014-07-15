@@ -14,7 +14,8 @@ from pyplanck.utils import (check_is_valid_name_string,
                             check_is_valid_item_shortcut,
                             check_is_valid_item_price,
                             check_is_valid_item_quantity,
-                            check_is_valid_quantity_delta)
+                            check_is_valid_quantity_delta,
+                            check_is_valid_employee_level)
 
 
 def test_check_is_valid_name_string_accepts_str():
@@ -92,3 +93,19 @@ def test_check_is_valid_quantity_delta_rejects_non_integers():
 @raises(ValueError)
 def test_check_is_valid_quantity_delta_rejects_negative():
     check_is_valid_quantity_delta(-1)
+
+
+def test_check_is_valid_employee_level_accepts_0_1_2():
+    check_is_valid_employee_level(0)
+    check_is_valid_employee_level(1)
+    check_is_valid_employee_level(2)
+
+
+@raises(ValueError)
+def test_check_is_valid_employee_level_rejects_non_integers():
+    check_is_valid_employee_level("gum")
+
+
+@raises(ValueError)
+def test_check_is_valid_employee_level_rejects_invalid_integers():
+    check_is_valid_employee_level(3)
