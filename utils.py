@@ -27,19 +27,6 @@ def check_is_valid_item_name(item_name):
     check_is_valid_name_string(name_string=item_name, string_type="item name")
 
 
-def check_is_valid_item_price(item_price):
-    """
-    Checks that `item_price` is a valid item price, and raises an error
-    otherwise.
-    
-    A valid item price must be a positive (>= 0) float or int.
-    """
-    if type(item_price) not in (float, int):
-        raise ValueError("item price must be either float or int")
-    if item_price < 0:
-        raise ValueError("item price must be positive")
-
-
 def check_is_valid_item_barcode(item_barcode):
     """
     Checks that `item_barcode` is a valid item barcode, and raises an error
@@ -65,3 +52,42 @@ def check_is_valid_item_shortcut(item_shortcut):
     """
     check_is_valid_name_string(name_string=item_shortcut,
                                string_type="item shortcut")
+
+
+def check_is_valid_item_price(item_price):
+    """
+    Checks that `item_price` is a valid item price, and raises an error
+    otherwise.
+
+    A valid item price must be a positive (>= 0) float or int.
+    """
+    if type(item_price) not in (float, int):
+        raise ValueError("item price must be either float or int")
+    if item_price < 0:
+        raise ValueError("item price must be positive")
+
+
+def check_is_valid_item_quantity(item_quantity):
+    """
+    Checks that `item_quantity` is a valid item quantity, and raises an error
+    otherwise.
+
+    A valid item quantity must be a positive (>= 0) int.
+    """
+    if type(item_quantity) is not int:
+        raise ValueError("item quantity must be an int")
+    if item_quantity < 0:
+        raise ValueError("item quantity must be positive")
+
+
+def check_is_valid_quantity_delta(delta):
+    """
+    Checks that `delta` is a valid quantity variation, and raises an error
+    otherwise.
+
+    A valid quantity variation must be a positive (>= 0) int.
+    """
+    if type(delta) is not int:
+        raise ValueError("quantity variation must be an int")
+    if delta < 1:
+        raise ValueError("quantity variation must be at least 1")
