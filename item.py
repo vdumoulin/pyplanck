@@ -67,7 +67,7 @@ class Item(object):
 
     def get_name(self):
         return self.name
-    
+
     def get_price(self):
         return self.price
 

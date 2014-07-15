@@ -143,11 +143,11 @@ def check_is_valid_file_path(file_path, file_type="file"):
     Checks that `file_path` is a valid file path, and raises an error
     otherwise.
     """
-    if not os.path.exists(file_path):
+    if not os.path.isfile(file_path):
         raise ValueError("path for " + file_type + " file does not exist")
 
 
-def check_is_valid_menu_file_path(menu_file_path, file_type="menu"):
+def check_is_valid_menu_file_path(menu_file_path):
     """
     Checks that `menu_file_path` is a valid menu file path, and raises an error
     otherwise.
@@ -155,8 +155,7 @@ def check_is_valid_menu_file_path(menu_file_path, file_type="menu"):
     check_is_valid_file_path(file_path=menu_file_path, file_type="menu")
 
 
-def check_is_valid_employees_file_path(employees_file_path,
-                                       file_type="employees"):
+def check_is_valid_employees_file_path(employees_file_path):
     """
     Checks that `employees_file_path` is a valid employees file path, and
     raises an error otherwise.
