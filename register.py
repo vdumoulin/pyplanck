@@ -9,28 +9,188 @@ __license__ = "GPL v2"
 __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
-import io, logging
+import io, os, logging, struct
 from pyplanck.item import Item
 from pyplanck.employee import Employee
+from pyplanck.exceptions import CredentialException
 from pyplanck.utils import (check_is_valid_menu_file_path,
                             check_is_valid_employees_file_path)
 
 
 class Register(object):
-    def __init__(self, menu_file_path, employees_file_path):
+    """
+    Class implementing the register's functionalities.
+
+    Parameters
+    ----------
+    menu_file_path : str
+        Path to the menu file
+    employees_file_path : str
+        Path to the employees file
+    register_count_file_path : str
+        Path to the register count file
+    """
+    def __init__(self, menu_file_path, employees_file_path,
+                 register_count_file_path):
         # Input sanitization
         check_is_valid_menu_file_path(menu_file_path)
         check_is_valid_employees_file_path(employees_file_path)
 
+        self.register_count_file_path = register_count_file_path
+
         self.menu = self._load_menu(menu_file_path)
         self.employees = self._load_employees(employees_file_path)
-        self.order = None
+        self.register_count = self._load_register_count(
+            self.register_count_file_path
+        )
 
-    def _load_menu(self, menu_file_path):
+        self.employee = None
+        self.order = {}
+
+    def get_register_count(self):
+        """
+        Returns the register count.
+        """
+        self._verify_credentials(self.employee, 2)
+        return self.register_count
+
+    def login_employee(self, token):
+        """
+        Finds and logs in an employee by a token, either a barcode or a
+        permanent code.
+
+        Parameters
+        ----------
+        token : str
+            Token by which to search the employee
+        """
+        employee = next((e for e in self.employees if
+                         (e.get_barcode() == token
+                          or e.get_code() == token)),
+                        None)
+        self.employee = employee
+
+    def logout_employee(self):
+        """
+        Logs out an employee.
+        """
+        self.employee = None
+
+    def scan(self, string):
+        """
+        Scans an input of the register.
+
+        Parameters
+        ----------
+        string : str
+            Input string
+        """
+        # Match the string with a menu item and add it to the order,
+        # if possible
+        self._verify_credentials(self.employee, 0)
+        item = self.find(string)
+        if item is not None:
+            self.add_to_order(item)
+
+    def add_to_order(self, item):
+        """
+        Adds an item to the order.
+
+        Parameters
+        ----------
+        item : pyplanck.item.Item
+            Item to add
+        """
+        self._verify_credentials(self.employee, 1)
+        if item in self.order:
+            self.order[item] = self.order[item] + 1
+        else:
+            self.order[item] = 1
+
+    def remove_from_order(self, item):
+        """
+        Removes an item from the order.
+
+        Parameters
+        ----------
+        item : pyplanck.item.Item
+            Item to remove
+        """
+        self._verify_credentials(self.employee, 1)
+        if item in self.order:
+            if self.order[item] == 1:
+                del self.order[item]
+            else:
+                self.order[item] = self.order[item] - 1
+        else:
+            raise ValueError("item '" + item.name + "' not in current order")
+
+    def find(self, token):
+        """
+        Finds an item in the menu by a token, either its barcode or its
+        shortcut.
+
+        Parameters
+        ----------
+        token : str
+            Token by which to search the item
+        """
+        self._verify_credentials(self.employee, 0)
+        item = next((i for i in self.menu if (i.get_shortcut() == token
+                     or i.get_barcode() == token)), None)
+        return item
+
+    def clear_order(self):
+        """
+        Clear the register's order.
+        """
+        self._verify_credentials(self.employee, 0)
+        self.order = {}
+
+    def checkout_order(self):
+        """
+        Adds order total to register count and logs the transaction.
+        """
+        self._verify_credentials(self.employee, 1)
+        order_total = reduce(lambda x, y: x + y,
+                             [item.get_price() * quantity
+                              for (item, quantity) in self.order.items()])
+        self._add_to_register_count(order_total)
+        self._log_order()
+        self.clear_order()
+
+    def order_to_string(self):
+        """
+        Returns a string representation of the current order.
+        """
+        self._verify_credentials(self.employee, 0)
+        rval = ""
+        for (item, quantity) in self.order.items():
+            rval += item.name + " x " + str(quantity) + "\n"
+        return rval.strip()
+
+    def _verify_credentials(self, employee, authorized_level):
+        if employee is None and authorized_level is not None:
+            raise CredentialException("unauthorized operation while no " +
+                                      "employee logged in")
+        employee_level = employee.get_level()
+        if employee_level < authorized_level:
+            raise CredentialException("insufficient privileges for this " +
+                                      "operation")
+
+    def _load_menu(self, file_path):
+        """
+        Loads and returns the menu.
+
+        Parameters
+        ----------
+        file_path : str
+            Path to the menu file
+        """
         menu = []
-        with io.open(menu_file_path, encoding='utf-8') as menu_file:
+        with io.open(file_path, encoding='utf-8') as f:
             # Read all lines in the file
-            lines = menu_file.readlines()
+            lines = f.readlines()
             # Strip all lines from trailing white space and carriage returns
             lines = [line.strip() for line in lines]
             # Remove empty lines
@@ -110,12 +270,20 @@ class Register(object):
 
         return list(set(menu))
 
-    def _load_employees(self, employees_file_path):
+    def _load_employees(self, file_path):
+        """
+        Loads and returns the employees list.
+
+        Parameters
+        ----------
+        file_path : str
+            Path to the employees file
+        """
         employees_list = []
 
-        with io.open(employees_file_path, encoding='utf-8') as employees_file:
+        with io.open(file_path, encoding='utf-8') as f:
             # Read all lines in the file
-            lines = employees_file.readlines()
+            lines = f.readlines()
             # Strip all lines from trailing white space and carriage returns
             lines = [line.strip() for line in lines]
             # Remove empty lines
