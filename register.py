@@ -93,7 +93,7 @@ class Register(object):
             Input string
         """
         self._verify_credentials(self.employee, 0)
-        item = self.find(string)
+        item = self._find(string)
         self._add_to_order(item)
 
     def remove(self, string):
@@ -106,7 +106,7 @@ class Register(object):
             Input string
         """
         self._verify_credentials(self.employee, 0)
-        item = self.find(string)
+        item = self._find(string)
         self._remove_from_order(item)
 
     def clear_order(self):
@@ -158,7 +158,7 @@ class Register(object):
     # -------------------------------------------------------------------------
     #                             PRIVATE METHODS
     # -------------------------------------------------------------------------
-    def find(self, token):
+    def _find(self, token):
         """
         Finds an item in the menu by a token, either its barcode or its
         shortcut.
