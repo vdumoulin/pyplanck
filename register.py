@@ -150,7 +150,12 @@ class Register(object):
 
     def adjust(self, amount):
         """
-        WRITEME
+        Adjusts the register count
+
+        Parameters
+        ----------
+        amount : int or float
+            Adjustment amount
         """
         self._verify_credentials(self.employee, 2)
         self._adjust_register_count(amount)
