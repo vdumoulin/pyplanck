@@ -190,6 +190,25 @@ def test_register_remove():
     assert register.order == final_order
 
 
+def test_register_remove_custom():
+    register = Register('tmp/menu.txt', 'tmp/employees.txt',
+                        'tmp/register_count.bin')
+    register.login_employee("admin")
+
+    items = [
+        Item("Chocolate bar", 1.0, "001", category="Candy", shortcut=None),
+        Item("gum", 0.47, "custom_gum", category="Custom", shortcut=None)
+    ]
+    initial_order = {items[0]: 1, items[1]: 1}
+    final_order = {items[0]: 1}
+
+    correct_added_item = Item("gum", 0.47, "custom_gum", category="Custom",
+                              shortcut=None)
+    register.order = initial_order
+    register.remove("custom_gum")
+    assert register.order == final_order
+
+
 def test_register_clear_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
                         'tmp/register_count.bin')
@@ -270,7 +289,7 @@ def test_register_find_by_barcode():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
                         'tmp/register_count.bin')
     register.login_employee("admin")
-    item = register._find("001")
+    item = register._find_in_menu("001")
     assert item == Item("Chocolate bar", 1.0, "001", category="Candy",
                         shortcut=None)
 
@@ -279,7 +298,7 @@ def test_register_find_by_shortcut():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
                         'tmp/register_count.bin')
     register.login_employee("admin")
-    item = register._find("hc")
+    item = register._find_in_menu("hc")
     assert item == Item("Hot chocolate", 0.5, "003", category="Beverage",
                         shortcut="hc")
 
@@ -289,7 +308,7 @@ def test_register_find_raises_exception_on_nonexistent_item():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
                         'tmp/register_count.bin')
     register.login_employee("admin")
-    item = register._find("nothing")
+    item = register._find_in_menu("nothing")
 
 
 def test_register_verify_credential_allows_right_employee():

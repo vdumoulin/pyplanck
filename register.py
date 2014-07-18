@@ -98,7 +98,7 @@ class Register(object):
             Token representing the item to add
         """
         self._verify_credentials(self.employee, 0)
-        item = self._find(token)
+        item = self._find_in_menu(token)
         self._add_to_order(item)
 
     def add_custom(self, name, price):
@@ -129,7 +129,7 @@ class Register(object):
             Token representing the item to remove
         """
         self._verify_credentials(self.employee, 0)
-        item = self._find(token)
+        item = self._find_in_order(token)
         self._remove_from_order(item)
 
     def clear_order(self):
@@ -186,7 +186,23 @@ class Register(object):
     # -------------------------------------------------------------------------
     #                             INTERNAL METHODS
     # -------------------------------------------------------------------------
-    def _find(self, token):
+    def _find(self, items_list, token):
+        """
+        Finds an item in a list by a token, either its barcode or its
+        shortcut.
+
+        Parameters
+        ----------
+        token : str
+            Token by which to search the item
+        """
+        item = next((i for i in items_list if (i.get_shortcut() == token
+                     or i.get_barcode() == token)), None)
+        if item is None:
+            raise ValueError("item not found with token '" + token + "'")
+        return item
+
+    def _find_in_menu(self, token):
         """
         Finds an item in the menu by a token, either its barcode or its
         shortcut.
@@ -196,12 +212,19 @@ class Register(object):
         token : str
             Token by which to search the item
         """
-        self._verify_credentials(self.employee, 0)
-        item = next((i for i in self.menu if (i.get_shortcut() == token
-                     or i.get_barcode() == token)), None)
-        if item is None:
-            raise ValueError("item not found with token '" + token + "'")
-        return item
+        return self._find(self.menu, token)
+
+    def _find_in_order(self, token):
+        """
+        Finds an item in the order by a token, either its barcode or its
+        shortcut.
+
+        Parameters
+        ----------
+        token : str
+            Token by which to search the item
+        """
+        return self._find(self.order.keys(), token)
 
     def _verify_credentials(self, employee, authorized_level):
         if employee is None and authorized_level is not None:
