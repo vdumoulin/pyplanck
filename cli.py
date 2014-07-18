@@ -49,6 +49,14 @@ class CLI(object):
         except ValueError:
             pass
 
+    def add_custom(self, name, price):
+        try:
+            self.register.add_custom(name, price)
+        except CredentialException:
+            logging.warning("insufficient privileges to add a custom item")
+        except ValueError as e:
+            logging.warning(e.__str__)
+
     def remove(self, token):
         try:
             self.register.remove(token)
@@ -106,6 +114,14 @@ class CLI(object):
                     logging.warning("need an adjustment amount")
                     continue
                 self.adjust(tokens[1])
+            elif tokens[0] == "custom":
+                if len(tokens) < 3:
+                    logging.warning("need an name and a price")
+                    continue
+                try:
+                    self.add_custom(tokens[1], float(tokens[2]))
+                except ValueError:
+                    logging.warning("price is not valid")
             else:
                 self.add(tokens[0])
 
