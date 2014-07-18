@@ -156,7 +156,7 @@ class Register(object):
         self._adjust_register_count(amount)
 
     # -------------------------------------------------------------------------
-    #                             PRIVATE METHODS
+    #                             INTERNAL METHODS
     # -------------------------------------------------------------------------
     def _find(self, token):
         """
