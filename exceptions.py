@@ -12,3 +12,7 @@ __email__ = "vincent.dumoulin@umontreal.ca"
 
 class CredentialException(Exception):
     pass
+
+
+class ItemNotFoundException(Exception):
+    pass
