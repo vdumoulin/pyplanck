@@ -47,12 +47,26 @@ class Register(object):
         self.employee = None
         self.order = {}
 
-    def get_register_count(self):
+    # -------------------------------------------------------------------------
+    #                           EMPLOYEE HANDLING
+    # -------------------------------------------------------------------------
+    def login_employee(self, token):
         """
-        Returns the register count.
+        Finds and logs in an employee by a token, either a barcode or a
+        permanent code.
+
+        Parameters
+        ----------
+        token : str
+            Token by which to search the employee
         """
-        self._verify_credentials(self.employee, 2)
-        return self.register_count
+        employee = next((e for e in self.employees if
+                         (e.get_barcode() == token
+                          or e.get_code() == token)),
+                        None)
+        if employee is None:
+            raise CredentialException("invalid employee login")
+        self.employee = employee
 
     def logout_employee(self):
         """
@@ -66,6 +80,9 @@ class Register(object):
         else:
             return self.employee.get_name()
 
+    # -------------------------------------------------------------------------
+    #                             ORDER HANDLING
+    # -------------------------------------------------------------------------
     def scan(self, string):
         """
         Scans an input of the register.
@@ -91,30 +108,6 @@ class Register(object):
         self._verify_credentials(self.employee, 0)
         item = self.find(string)
         self._remove_from_order(item)
-
-    def adjust(self, amount):
-        """
-        WRITEME
-        """
-        self._verify_credentials(self.employee, 2)
-        self._adjust_register_count(amount)
-
-    def find(self, token):
-        """
-        Finds an item in the menu by a token, either its barcode or its
-        shortcut.
-
-        Parameters
-        ----------
-        token : str
-            Token by which to search the item
-        """
-        self._verify_credentials(self.employee, 0)
-        item = next((i for i in self.menu if (i.get_shortcut() == token
-                     or i.get_barcode() == token)), None)
-        if item is None:
-            raise ValueError("item not found with token '" + token + "'")
-        return item
 
     def clear_order(self):
         """
@@ -144,6 +137,43 @@ class Register(object):
         for (item, quantity) in self.order.items():
             rval += item.name + " x " + str(quantity) + "\n"
         return rval.strip()
+
+    # -------------------------------------------------------------------------
+    #                          REGISTER COUNT HANDLING
+    # -------------------------------------------------------------------------
+    def get_register_count(self):
+        """
+        Returns the register count.
+        """
+        self._verify_credentials(self.employee, 2)
+        return self.register_count
+
+    def adjust(self, amount):
+        """
+        WRITEME
+        """
+        self._verify_credentials(self.employee, 2)
+        self._adjust_register_count(amount)
+
+    # -------------------------------------------------------------------------
+    #                             PRIVATE METHODS
+    # -------------------------------------------------------------------------
+    def find(self, token):
+        """
+        Finds an item in the menu by a token, either its barcode or its
+        shortcut.
+
+        Parameters
+        ----------
+        token : str
+            Token by which to search the item
+        """
+        self._verify_credentials(self.employee, 0)
+        item = next((i for i in self.menu if (i.get_shortcut() == token
+                     or i.get_barcode() == token)), None)
+        if item is None:
+            raise ValueError("item not found with token '" + token + "'")
+        return item
 
     def _verify_credentials(self, employee, authorized_level):
         if employee is None and authorized_level is not None:
