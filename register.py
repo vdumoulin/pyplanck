@@ -54,27 +54,17 @@ class Register(object):
         self._verify_credentials(self.employee, 2)
         return self.register_count
 
-    def login_employee(self, token):
-        """
-        Finds and logs in an employee by a token, either a barcode or a
-        permanent code.
-
-        Parameters
-        ----------
-        token : str
-            Token by which to search the employee
-        """
-        employee = next((e for e in self.employees if
-                         (e.get_barcode() == token
-                          or e.get_code() == token)),
-                        None)
-        self.employee = employee
-
     def logout_employee(self):
         """
         Logs out an employee.
         """
         self.employee = None
+
+    def get_employee_name(self):
+        if self.employee is None:
+            return "None"
+        else:
+            return self.employee.get_name()
 
     def scan(self, string):
         """
