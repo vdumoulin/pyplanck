@@ -161,6 +161,18 @@ def test_register_add():
     assert register.order == {correct_added_item: correct_quantity}
 
 
+def test_register_add_custom():
+    register = Register('tmp/menu.txt', 'tmp/employees.txt',
+                        'tmp/register_count.bin')
+    register.login_employee("admin")
+    register.add_custom("gum", 0.47)
+
+    correct_added_item = Item("gum", 0.47, "custom_gum", category="Custom",
+                              shortcut=None)
+    correct_quantity = 1
+    assert register.order == {correct_added_item: correct_quantity}
+
+
 def test_register_remove():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
                         'tmp/register_count.bin')

@@ -13,7 +13,9 @@ import io, os, logging, struct
 from pyplanck.item import Item
 from pyplanck.employee import Employee
 from pyplanck.exceptions import CredentialException, ItemNotFoundException
-from pyplanck.utils import (check_is_valid_menu_file_path,
+from pyplanck.utils import (check_is_valid_item_name,
+                            check_is_valid_item_price,
+                            check_is_valid_menu_file_path,
                             check_is_valid_employees_file_path)
 
 
@@ -97,6 +99,24 @@ class Register(object):
         """
         self._verify_credentials(self.employee, 0)
         item = self._find(token)
+        self._add_to_order(item)
+
+    def add_custom(self, name, price):
+        """
+        Adds a custom item to the order
+
+        Parameters
+        ----------
+        name : str
+            Name of the custom item
+        price : int or float
+            Price of the custom item
+        """
+        self._verify_credentials(self.employee, 1)
+        check_is_valid_item_name(name)
+        check_is_valid_item_price(price)
+        item = Item(name=name, barcode="custom_" + name, category="Custom",
+                    price=price, shortcut=None)
         self._add_to_order(item)
 
     def remove(self, token):
