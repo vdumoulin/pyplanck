@@ -60,10 +60,14 @@ class Item(object):
                 str(self.price))
 
     def __eq__(self, other):
-        if type(other) == type(self) and other.barcode == self.barcode:
-            return True
-        else:
-            return False
+        return (type(self) == type(other) and self.barcode == other.barcode and
+                self.price == other.price and self.category == other.category
+                and self.shortcut == other.shortcut and self.name == other.name)
+
+    def __hash__(self):
+        return hash((type(self), self.barcode, self.price, self.category,
+                     self.shortcut, self.name))
+
 
     def get_name(self):
         return self.name
