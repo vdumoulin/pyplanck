@@ -75,6 +75,9 @@ class Register(object):
         self.employee = None
 
     def get_employee_name(self):
+        """
+        Returns the current employee's name
+        """
         if self.employee is None:
             return "None"
         else:
