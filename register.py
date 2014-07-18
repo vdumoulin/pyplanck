@@ -187,10 +187,11 @@ class Register(object):
         if employee is None and authorized_level is not None:
             raise CredentialException("unauthorized operation while no " +
                                       "employee logged in")
-        employee_level = employee.get_level()
-        if employee_level < authorized_level:
-            raise CredentialException("insufficient privileges for this " +
-                                      "operation")
+        if employee is not None:
+            employee_level = employee.get_level()
+            if employee_level < authorized_level:
+                raise CredentialException("insufficient privileges for this " +
+                                          "operation")
 
     def _add_to_order(self, item):
         """
