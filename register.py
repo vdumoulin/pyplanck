@@ -83,30 +83,30 @@ class Register(object):
     # -------------------------------------------------------------------------
     #                             ORDER HANDLING
     # -------------------------------------------------------------------------
-    def scan(self, string):
+    def add(self, token):
         """
-        Scans an input of the register.
+        Adds an item to the order
 
         Parameters
         ----------
-        string : str
-            Input string
+        token : str
+            Token representing the item to add
         """
         self._verify_credentials(self.employee, 0)
-        item = self._find(string)
+        item = self._find(token)
         self._add_to_order(item)
 
-    def remove(self, string):
+    def remove(self, token):
         """
-        Scans an input of the register.
+        Removes an item from the current order
 
         Parameters
         ----------
-        string : str
-            Input string
+        token : str
+            Token representing the item to remove
         """
         self._verify_credentials(self.employee, 0)
-        item = self._find(string)
+        item = self._find(token)
         self._remove_from_order(item)
 
     def clear_order(self):

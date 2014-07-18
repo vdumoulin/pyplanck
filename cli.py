@@ -41,11 +41,11 @@ class CLI(object):
         except CredentialException:
             logging.warning("insufficient privileges to print current order")
 
-    def scan(self, token):
+    def add(self, token):
         try:
-            self.register.scan(token)
+            self.register.add(token)
         except CredentialException:
-            logging.warning("insufficient privileges to scan an item")
+            logging.warning("insufficient privileges to add an item")
         except ValueError:
             pass
 
@@ -107,7 +107,7 @@ class CLI(object):
                     continue
                 self.adjust(tokens[1])
             else:
-                self.scan(tokens[0])
+                self.add(tokens[0])
 
 
 if __name__ == "__main__":
