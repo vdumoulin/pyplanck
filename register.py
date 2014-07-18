@@ -75,27 +75,22 @@ class Register(object):
         string : str
             Input string
         """
-        # Match the string with a menu item and add it to the order,
-        # if possible
         self._verify_credentials(self.employee, 0)
         item = self.find(string)
-        if item is not None:
-            self.add_to_order(item)
+        self._add_to_order(item)
 
-    def add_to_order(self, item):
+    def remove(self, string):
         """
-        Adds an item to the order.
+        Scans an input of the register.
 
         Parameters
         ----------
-        item : pyplanck.item.Item
-            Item to add
+        string : str
+            Input string
         """
-        self._verify_credentials(self.employee, 1)
-        if item in self.order:
-            self.order[item] = self.order[item] + 1
-        else:
-            self.order[item] = 1
+        self._verify_credentials(self.employee, 0)
+        item = self.find(string)
+        self._remove_from_order(item)
 
     def remove_from_order(self, item):
         """
@@ -128,6 +123,8 @@ class Register(object):
         self._verify_credentials(self.employee, 0)
         item = next((i for i in self.menu if (i.get_shortcut() == token
                      or i.get_barcode() == token)), None)
+        if item is None:
+            raise ValueError("item not found with token '" + token + "'")
         return item
 
     def clear_order(self):
@@ -167,6 +164,39 @@ class Register(object):
         if employee_level < authorized_level:
             raise CredentialException("insufficient privileges for this " +
                                       "operation")
+
+    def _add_to_order(self, item):
+        """
+        Adds an item to the order.
+
+        Parameters
+        ----------
+        item : pyplanck.item.Item
+            Item to add
+        """
+        if item in self.order:
+            self.order[item] = self.order[item] + 1
+        else:
+            self.order[item] = 1
+
+    def _remove_from_order(self, item):
+        """
+        Removes an item from the order.
+
+        Parameters
+        ----------
+        item : pyplanck.item.Item
+            Item to remove
+        """
+        if item in self.order:
+            if self.order[item] == 1:
+                del self.order[item]
+            else:
+                self.order[item] = self.order[item] - 1
+        else:
+            raise ItemNotFoundException("item '" + item.name +
+                                        "' not in current order")
+
 
     def _load_menu(self, file_path):
         """
