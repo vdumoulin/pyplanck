@@ -1,8 +1,6 @@
 #Chocolat|1.00
-5849632873|Barre Mars
-7022100516|Toblerone|0.75
+001|Choco 1
+002|Choco 2|0.75
 
 #Brevage chaud|0.50
-6500036492|Chocolat chaud|0.50|cc
-1234500027|Petit thé|0.50|tp
-1234500028|Grand thé|0.75|tg
+003|Chocolat chaud|0.50|cc
