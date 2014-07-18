@@ -71,32 +71,6 @@ def check_is_valid_item_price(item_price):
         raise ValueError("item price must be positive")
 
 
-def check_is_valid_item_quantity(item_quantity):
-    """
-    Checks that `item_quantity` is a valid item quantity, and raises an error
-    otherwise.
-
-    A valid item quantity must be a positive (>= 0) int.
-    """
-    if type(item_quantity) is not int:
-        raise ValueError("item quantity must be an int")
-    if item_quantity < 0:
-        raise ValueError("item quantity must be positive")
-
-
-def check_is_valid_quantity_delta(delta):
-    """
-    Checks that `delta` is a valid quantity variation, and raises an error
-    otherwise.
-
-    A valid quantity variation must be a positive (>= 0) int.
-    """
-    if type(delta) is not int:
-        raise ValueError("quantity variation must be an int")
-    if delta < 1:
-        raise ValueError("quantity variation must be at least 1")
-
-
 def check_is_valid_employee_name(employee_name):
     """
     Checks that `employee_name` is a valid employee name, and raises an error
