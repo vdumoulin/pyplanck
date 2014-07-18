@@ -92,23 +92,12 @@ class Register(object):
         item = self.find(string)
         self._remove_from_order(item)
 
-    def remove_from_order(self, item):
+    def adjust(self, amount):
         """
-        Removes an item from the order.
-
-        Parameters
-        ----------
-        item : pyplanck.item.Item
-            Item to remove
+        WRITEME
         """
-        self._verify_credentials(self.employee, 1)
-        if item in self.order:
-            if self.order[item] == 1:
-                del self.order[item]
-            else:
-                self.order[item] = self.order[item] - 1
-        else:
-            raise ValueError("item '" + item.name + "' not in current order")
+        self._verify_credentials(self.employee, 2)
+        self._adjust_register_count(amount)
 
     def find(self, token):
         """
@@ -367,6 +356,20 @@ class Register(object):
             with io.open(file_path, 'rb') as f:
                 (register_count, ) = struct.unpack('d', f.read(8))
         return register_count
+
+    def _adjust_register_count(self, amount):
+        """
+        Adjusts the register count
+
+        Parameters
+        ----------
+        amount : float
+            Adjustment amount
+        """
+        if amount < 0:
+            self._substract_from_register_count(abs(amount))
+        else:
+            self._add_to_register_count(amount)
 
     def _add_to_register_count(self, amount):
         """
