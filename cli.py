@@ -9,19 +9,9 @@ __license__ = "GPL v2"
 __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
-import argparse, logging
+import argparse
 from pyplanck.register import Register
 from pyplanck.exceptions import CredentialException, ItemNotFoundException
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-handler = logging.StreamHandler()
-handler.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - ' +
-                              '%(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 
 class CLI(object):
@@ -33,7 +23,8 @@ class CLI(object):
             self.register.login_employee(token)
             self.prompt = self.register.get_employee_name() + " > "
         except CredentialException:
-            logger.warning("invalid employee, unable to login")
+            self.logger.warning("invalid employee token '" + token + "', " +
+                                "unable to login")
 
     def logout(self):
         self.register.logout_employee()
@@ -43,19 +34,21 @@ class CLI(object):
         try:
             print self.register.get_register_count()
         except CredentialException:
-            logger.warning("insufficient privileges to print register count")
+            self.logger.warning("insufficient privileges to print register " +
+                                "count")
 
     def print_order(self):
         try:
             print self.register.order_to_string()
         except CredentialException:
-            logger.warning("insufficient privileges to print current order")
+            self.logger.warning("insufficient privileges to print current " +
+                                "order")
 
     def add(self, token):
         try:
             self.register.add(token)
         except CredentialException:
-            logger.warning("insufficient privileges to add an item")
+            self.logger.warning("insufficient privileges to add an item")
         except ValueError:
             pass
 
@@ -63,43 +56,44 @@ class CLI(object):
         try:
             self.register.add_custom(name, price)
         except CredentialException:
-            logger.warning("insufficient privileges to add a custom item")
+            self.logger.warning("insufficient privileges to add a custom item")
         except ValueError as e:
-            logger.warning(e.__str__)
+            self.logger.warning(e.__str__)
 
     def remove(self, token):
         try:
             self.register.remove(token)
         except CredentialException:
-            logger.warning("insufficient privileges to scan an item")
+            self.logger.warning("insufficient privileges to scan an item")
         except ValueError:
-            logger.warning("token does not correspond to any item")
+            self.logger.warning("token does not correspond to any item")
         except ItemNotFoundException:
-            logger.warning("item not in order, unable to remove it")
+            self.logger.warning("item not in order, unable to remove it")
 
     def adjust(self, token):
         try:
             amount = float(token)
             self.register.adjust(amount)
         except CredentialException:
-            logger.warning("insufficient privileges to adjust register count")
+            self.logger.warning("insufficient privileges to adjust register " +
+                                "count")
         except ValueError as e:
-            logger.warning("invalid adjustment amount: " + e)
+            self.logger.warning("invalid adjustment amount: " + e)
 
     def checkout(self):
         try:
             self.register.checkout_order()
         except CredentialException:
-            logger.warning("insufficient privileges to checkout order")
+            self.logger.warning("insufficient privileges to checkout order")
 
     def count(self, count_string):
         try:
             count = float(count_string)
             self.register.count_register(count)
         except CredentialException:
-            logger.warning("insufficient privileges to count register")
+            self.logger.warning("insufficient privileges to count register")
         except ValueError as e:
-            logger.warning("invalid count: " + e)
+            self.logger.warning("invalid count: " + e)
 
     valid_commands = {
         'quit': quit,
@@ -108,6 +102,7 @@ class CLI(object):
 
     def __init__(self, register, default_prompt="caisse-planck > "):
         self.register = register
+        self.logger = register.get_events_logger()
         self.default_prompt = default_prompt
         self.prompt = self.default_prompt
         self.end = False
@@ -120,7 +115,7 @@ class CLI(object):
                 self.quit()
             elif tokens[0] == "login":
                 if len(tokens) < 2:
-                    logger.warning("need a login token")
+                    self.logger.warning("need a login token")
                     continue
                 self.login(tokens[1])
             elif tokens[0] == "logout":
@@ -131,32 +126,33 @@ class CLI(object):
                 self.print_order()
             elif tokens[0] == "remove":
                 if len(tokens) < 2:
-                    logger.warning("need an item to remove")
+                    self.logger.warning("need an item to remove")
                     continue
                 self.remove(tokens[1])
             elif tokens[0] == "adjust_count":
                 if len(tokens) < 2:
-                    logger.warning("need an adjustment amount")
+                    self.logger.warning("need an adjustment amount")
                     continue
                 self.adjust(tokens[1])
             elif tokens[0] == "custom":
                 if len(tokens) < 3:
-                    logger.warning("need an name and a price")
+                    self.logger.warning("need an name and a price")
                     continue
                 try:
                     self.add_custom(tokens[1], float(tokens[2]))
                 except ValueError:
-                    logger.warning("price is not valid")
+                    self.logger.warning("price is not valid")
             elif tokens[0] == "checkout":
                 self.checkout()
             elif tokens[0] == "count":
                 if len(tokens) < 2:
-                    logger.warning("need an register count")
+                    self.logger.warning("need an register count")
                     continue
                 else:
                     self.count(tokens[1])
             else:
-                self.add(tokens[0])
+                if tokens[0] != "":
+                    self.add(tokens[0])
 
 
 if __name__ == "__main__":
@@ -169,15 +165,20 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--register_count_path", help="path to the " +
                         "register count file", type=str,
                         default="sample_register_count.bin")
+    parser.add_argument("-l", "--log_path", help="path to the " +
+                        "directory of log files", type=str,
+                        default="./")
     args = parser.parse_args()
 
     menu_path = args.menu_path
     employees_path = args.employees_path
     register_count_path = args.register_count_path
+    log_path = args.log_path
 
     register = Register(menu_file_path=menu_path,
                         employees_file_path=employees_path,
-                        register_count_file_path=register_count_path)
+                        register_count_file_path=register_count_path,
+                        log_path=log_path)
 
     cli = CLI(register=register)
     cli.start()

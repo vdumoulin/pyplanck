@@ -10,6 +10,7 @@ __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
 import io, os, logging, struct
+from logging.handlers import TimedRotatingFileHandler
 from pyplanck.item import Item
 from pyplanck.employee import Employee
 from pyplanck.exceptions import CredentialException, ItemNotFoundException
@@ -18,34 +19,6 @@ from pyplanck.utils import (check_is_valid_item_name,
                             check_is_valid_count,
                             check_is_valid_menu_file_path,
                             check_is_valid_employees_file_path)
-
-# Logger for transactions
-transaction_logger = logging.getLogger('transaction')
-transaction_logger.setLevel(logging.INFO)
-transaction_handler = logging.StreamHandler()
-transaction_handler.setLevel(logging.INFO)
-transaction_formatter = logging.Formatter('%(asctime)s\n%(message)s')
-transaction_handler.setFormatter(transaction_formatter)
-transaction_logger.addHandler(transaction_handler)
-
-# Logger for register count
-count_logger = logging.getLogger('count')
-count_logger.setLevel(logging.INFO)
-count_handler = logging.StreamHandler()
-count_handler.setLevel(logging.INFO)
-count_formatter = logging.Formatter('%(asctime)s\n%(message)s')
-count_handler.setFormatter(transaction_formatter)
-count_logger.addHandler(transaction_handler)
-
-# Logger for other events
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - ' +
-                              '%(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 
 class Register(object):
@@ -62,12 +35,13 @@ class Register(object):
         Path to the register count file
     """
     def __init__(self, menu_file_path, employees_file_path,
-                 register_count_file_path):
+                 register_count_file_path, log_path):
         # Input sanitization
         check_is_valid_menu_file_path(menu_file_path)
         check_is_valid_employees_file_path(employees_file_path)
 
         self.register_count_file_path = register_count_file_path
+        self.log_path = log_path
 
         self.menu = self._load_menu(menu_file_path)
         self.employees = self._load_employees(employees_file_path)
@@ -77,6 +51,48 @@ class Register(object):
 
         self.employee = None
         self.order = {}
+
+        # Logger for transactions
+        transaction_logger = logging.getLogger('transaction')
+        transaction_logger.setLevel(logging.INFO)
+        transaction_handler = TimedRotatingFileHandler(self.log_path +
+                                                       'transactions.log',
+                                                       'midnight')
+        transaction_handler.setLevel(logging.INFO)
+        transaction_formatter = logging.Formatter('%(asctime)s\n%(message)s')
+        transaction_handler.setFormatter(transaction_formatter)
+        transaction_logger.addHandler(transaction_handler)
+        self.transaction_logger = transaction_logger
+
+        # Logger for register count
+        count_logger = logging.getLogger('count')
+        count_logger.setLevel(logging.INFO)
+        count_handler = TimedRotatingFileHandler(self.log_path +
+                                                 'counts.log',
+                                                 'midnight')
+        count_handler.setLevel(logging.INFO)
+        count_formatter = logging.Formatter('%(asctime)s\n%(message)s')
+        count_handler.setFormatter(transaction_formatter)
+        count_logger.addHandler(transaction_handler)
+        self.count_logger = count_logger
+
+        # Logger for other events
+        logger = logging.getLogger('event')
+        logger.setLevel(logging.INFO)
+        handler = TimedRotatingFileHandler(self.log_path + 'events.log',
+                                           'midnight')
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - ' +
+                                      '%(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        self.logger = logger
+
+    def get_events_logger(self):
+        """
+        Returns the register's events logger
+        """
+        return self.logger
 
     # -------------------------------------------------------------------------
     #                           EMPLOYEE HANDLING
@@ -543,8 +559,10 @@ class Register(object):
         """
         WRITEME
         """
-        log_string = self.get_employee_name() + "\n" + self.order_to_string()
-        transaction_logger.info(log_string)
+        self.transaction_logger.info(
+            self.get_employee_name() + "\n" +
+            self.order_to_string()
+        )
 
     def _log_count(self, count):
         """
