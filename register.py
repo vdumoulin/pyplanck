@@ -15,6 +15,7 @@ from pyplanck.employee import Employee
 from pyplanck.exceptions import CredentialException, ItemNotFoundException
 from pyplanck.utils import (check_is_valid_item_name,
                             check_is_valid_item_price,
+                            check_is_valid_count,
                             check_is_valid_menu_file_path,
                             check_is_valid_employees_file_path)
 
@@ -192,6 +193,26 @@ class Register(object):
     # -------------------------------------------------------------------------
     #                          REGISTER COUNT HANDLING
     # -------------------------------------------------------------------------
+    def count_register(self, count):
+        """
+        Compares an employee's register count with the internal count and logs
+        the operation
+
+        Parameters
+        ----------
+        count : float
+            Employee register count
+        """
+        self._verify_credentials(self.employee, 1)
+        check_is_valid_count(count)
+        count_logger.info(
+            "Count by " + self.get_employee_name() + "\n" +
+            "Employee count: %.2f$" % count + "\n" +
+            "Register count: %.2f$" % self.register_count + "\n" +
+            "      Mismatch: %.2f$" % (count - self.register_count)
+        )
+        self._log_count(count)
+
     def get_register_count(self):
         """
         Returns the register count.
@@ -524,4 +545,9 @@ class Register(object):
         """
         log_string = self.get_employee_name() + "\n" + self.order_to_string()
         transaction_logger.info(log_string)
+
+    def _log_count(self, count):
+        """
+        WRITEME
+        """
         pass

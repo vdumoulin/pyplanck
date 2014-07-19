@@ -58,17 +58,24 @@ def check_is_valid_item_shortcut(item_shortcut):
                                    string_type="item shortcut")
 
 
+def check_is_valid_amount(amount, amount_type="amount"):
+    """
+    Checks that `amount` is a money amount, and raises an error otherwise.
+
+    A valid money amount must be a positive (>= 0) float or int.
+    """
+    if type(amount) not in (float, int):
+        raise ValueError(amount_type + " must be either float or int")
+    if amount < 0:
+        raise ValueError(amount_type + " must be positive")
+
+
 def check_is_valid_item_price(item_price):
     """
     Checks that `item_price` is a valid item price, and raises an error
-    otherwise.
-
-    A valid item price must be a positive (>= 0) float or int.
+    otherwise. Validity conditions are defined in `check_is_valid_amount`.
     """
-    if type(item_price) not in (float, int):
-        raise ValueError("item price must be either float or int")
-    if item_price < 0:
-        raise ValueError("item price must be positive")
+    check_is_valid_amount(item_price, "item_price")
 
 
 def check_is_valid_employee_name(employee_name):
@@ -110,6 +117,14 @@ def check_is_valid_employee_level(employee_level):
         raise ValueError("employee level must be an int")
     if employee_level not in (0, 1, 2):
         raise ValueError("employee level must be in {0, 1, 2}")
+
+
+def check_is_valid_count(count):
+    """
+    Checks that `count` is a valid register count, and raises an error
+    otherwise. Validity conditions are defined in `check_is_valid_amount`.
+    """
+    check_is_valid_amount(count, "count")
 
 
 def check_is_valid_file_path(file_path, file_type="file"):

@@ -12,7 +12,7 @@ __email__ = "vincent.dumoulin@umontreal.ca"
 from nose.tools import raises
 from pyplanck.utils import (check_is_valid_name_string,
                             check_is_valid_item_shortcut,
-                            check_is_valid_item_price,
+                            check_is_valid_amount,
                             check_is_valid_employee_level)
 
 
@@ -34,26 +34,26 @@ def test_check_is_valid_item_shortcut_accepts_none():
     check_is_valid_item_shortcut(None)
 
 
-def test_check_is_valid_item_price_accepts_int():
-    check_is_valid_item_price(2)
+def test_check_is_valid_amount_accepts_int():
+    check_is_valid_amount(2)
 
 
-def test_check_is_valid_item_price_accepts_float():
-    check_is_valid_item_price(2.5)
-
-
-@raises(ValueError)
-def test_check_is_valid_item_price_rejects_non_numbers():
-    check_is_valid_item_price("gum")
+def test_check_is_valid_amount_accepts_float():
+    check_is_valid_amount(2.5)
 
 
 @raises(ValueError)
-def test_check_is_valid_item_price_rejects_negative_prices():
-    check_is_valid_item_price(-1.5)
+def test_check_is_valid_amount_rejects_non_numbers():
+    check_is_valid_amount("gum")
 
 
-def test_check_is_valid_item_price_accepts_free_price():
-    check_is_valid_item_price(0.0)
+@raises(ValueError)
+def test_check_is_valid_amount_rejects_negative_prices():
+    check_is_valid_amount(-1.5)
+
+
+def test_check_is_valid_amount_accepts_free_price():
+    check_is_valid_amount(0.0)
 
 
 def test_check_is_valid_employee_level_accepts_0_1_2():

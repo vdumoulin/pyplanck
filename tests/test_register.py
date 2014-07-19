@@ -276,6 +276,14 @@ def test_register_get_register_count():
     assert register.get_register_count() == 11.57
 
 
+@raises(ValueError)
+def test_register_count_register_rejects_negative_counts():
+    register = Register('tmp/menu.txt', 'tmp/employees.txt',
+                        'tmp/register_count.bin')
+    register.login_employee("admin")
+    register.count_register(-1)
+
+
 def test_register_adjust():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
                         'tmp/register_count.bin')
