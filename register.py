@@ -72,8 +72,8 @@ class Register(object):
                                                  'midnight')
         count_handler.setLevel(logging.INFO)
         count_formatter = logging.Formatter('%(asctime)s\n%(message)s')
-        count_handler.setFormatter(transaction_formatter)
-        count_logger.addHandler(transaction_handler)
+        count_handler.setFormatter(count_formatter)
+        count_logger.addHandler(count_handler)
         self.count_logger = count_logger
 
         # Logger for other events
