@@ -220,13 +220,6 @@ class Register(object):
             Employee register count
         """
         self._verify_credentials(self.employee, 1)
-        check_is_valid_count(count)
-        count_logger.info(
-            "Count by " + self.get_employee_name() + "\n" +
-            "Employee count: %.2f$" % count + "\n" +
-            "Register count: %.2f$" % self.register_count + "\n" +
-            "      Mismatch: %.2f$" % (count - self.register_count)
-        )
         self._log_count(count)
 
     def get_register_count(self):
@@ -568,4 +561,10 @@ class Register(object):
         """
         WRITEME
         """
-        pass
+        check_is_valid_count(count)
+        self.count_logger.info(
+            "Count by " + self.get_employee_name() + "\n" +
+            "Employee count: %.2f$" % count + "\n" +
+            "Register count: %.2f$" % self.register_count + "\n" +
+            "      Mismatch: %.2f$" % (count - self.register_count)
+        )
