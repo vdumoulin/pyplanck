@@ -38,6 +38,9 @@ def teardown_module():
     os.remove('tmp/menu.txt')
     os.remove('tmp/employees.txt')
     os.remove('tmp/register_count.bin')
+    os.remove('tmp/transactions.log')
+    os.remove('tmp/counts.log')
+    os.remove('tmp/events.log')
     try:
         os.rmdir('tmp')
     except OSError:
@@ -46,7 +49,7 @@ def teardown_module():
 
 def test_register_reads_menu():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     menu = register.menu
     correct_menu = [
         Item("Chocolate bar", 1.0, "001", category="Candy", shortcut=None),
@@ -68,7 +71,7 @@ def test_register_reads_menu():
 
 def test_register_reads_employees_list():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     employees = register.employees
     correct_employees = [
         Employee("Admin", "2222", "admin", 2),
@@ -92,25 +95,25 @@ def test_register_reads_register_count():
         data = struct.pack('d', 11.57)
         f.write(data)
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     assert register.register_count == 11.57
 
 
 def test_register_initial_employee_is_none():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     assert register.employee is None
 
 
 def test_register_initial_order_is_empty():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     assert register.order == {}
 
 
 def test_register_login_per_barcode():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     employee = Employee("Admin", "2222", "admin", 2)
     register.login_employee("2222")
     assert register.employee == employee
@@ -118,7 +121,7 @@ def test_register_login_per_barcode():
 
 def test_register_login_per_code():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     employee = Employee("Admin", "2222", "admin", 2)
     register.login_employee("admin")
     assert register.employee == employee
@@ -127,13 +130,13 @@ def test_register_login_per_code():
 @raises(CredentialException)
 def test_register_raises_exception_on_invalid_login():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("gum")
 
 
 def test_register_logout_employee():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     register.logout_employee()
     assert register.employee is None
@@ -141,20 +144,20 @@ def test_register_logout_employee():
 
 def test_register_get_employee_name_returns_employee_name():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     assert register.get_employee_name() == "Admin"
 
 
 def test_register_get_employee_name_returns_none():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     assert register.get_employee_name() == "None"
 
 
 def test_register_add():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     register.add("001")
 
@@ -166,7 +169,7 @@ def test_register_add():
 
 def test_register_add_custom():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     register.add_custom("gum", 0.47)
 
@@ -178,7 +181,7 @@ def test_register_add_custom():
 
 def test_register_remove():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
 
     items = [
@@ -195,7 +198,7 @@ def test_register_remove():
 
 def test_register_remove_custom():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
 
     items = [
@@ -214,7 +217,7 @@ def test_register_remove_custom():
 
 def test_register_clear_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
 
     items = [
@@ -231,7 +234,7 @@ def test_register_clear_order():
 
 def test_register_checkout_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
 
     items = [
@@ -252,7 +255,7 @@ def test_register_checkout_order():
 
 def test_register_order_to_string():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
 
     items = [
@@ -270,7 +273,7 @@ def test_register_order_to_string():
 
 def test_register_get_register_count():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     register.register_count = 11.57
     assert register.get_register_count() == 11.57
@@ -279,14 +282,14 @@ def test_register_get_register_count():
 @raises(ValueError)
 def test_register_count_register_rejects_negative_counts():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     register.count_register(-1)
 
 
 def test_register_adjust():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     register.register_count = 2.5
     register.adjust(2.5)
@@ -298,7 +301,7 @@ def test_register_adjust():
 
 def test_register_find_by_barcode():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     item = register._find_in_menu("001")
     assert item == Item("Chocolate bar", 1.0, "001", category="Candy",
@@ -307,7 +310,7 @@ def test_register_find_by_barcode():
 
 def test_register_find_by_shortcut():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     item = register._find_in_menu("hc")
     assert item == Item("Hot chocolate", 0.5, "003", category="Beverage",
@@ -317,14 +320,14 @@ def test_register_find_by_shortcut():
 @raises(ValueError)
 def test_register_find_raises_exception_on_nonexistent_item():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     item = register._find_in_menu("nothing")
 
 
 def test_register_verify_credential_allows_right_employee():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register._verify_credentials(Employee("E", "1111", "employee", 1), 0)
     register._verify_credentials(Employee("E", "1111", "employee", 1), 1)
 
@@ -332,26 +335,26 @@ def test_register_verify_credential_allows_right_employee():
 @raises(CredentialException)
 def test_register_verify_credential_raises_exception_on_wrong_employee():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register._verify_credentials(Employee("E", "1111", "employee", 1), 2)
 
 
 @raises(CredentialException)
 def test_register_verify_credential_raises_exception_on_none():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register._verify_credentials(None, 1)
 
 
 def test_register_verify_credential_can_allow_none():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register._verify_credentials(None, None)
 
 
 def test_register_add_existing_item_to_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     item = Item("Gum", 0.75, "002", category="Candy", shortcut=None)
     order = {item: 1}
@@ -363,7 +366,7 @@ def test_register_add_existing_item_to_order():
 
 def test_register_add_new_item_to_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     items = [
         Item("Chocolate bar", 1.0, "001", category="Candy", shortcut=None),
@@ -378,7 +381,7 @@ def test_register_add_new_item_to_order():
 
 def test_register_remove_duplicate_item_from_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     item = Item("Gum", 0.75, "002", category="Candy", shortcut=None)
     order = {item: 2}
@@ -390,7 +393,7 @@ def test_register_remove_duplicate_item_from_order():
 
 def test_register_remove_unique_item_from_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     item = Item("Gum", 0.75, "002", category="Candy", shortcut=None)
     order = {item: 1}
@@ -403,7 +406,7 @@ def test_register_remove_unique_item_from_order():
 @raises(ItemNotFoundException)
 def test_register_remove_raises_exception_if_item_not_in_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     item = Item("Gum", 0.75, "002", category="Candy", shortcut=None)
     order = {}
@@ -415,7 +418,7 @@ def test_register_remove_raises_exception_if_item_not_in_order():
 @raises(ValueError)
 def test_register_substract_raises_exception_if_amount_too_large():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
     register.register_count = 1
     register._substract_from_register_count(2)
@@ -426,7 +429,7 @@ def test_register_update_register_count():
         data = struct.pack('d', 11.57)
         f.write(data)
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
-                        'tmp/register_count.bin')
+                        'tmp/register_count.bin', 'tmp/')
     register.login_employee("admin")
 
     register.register_count = 2.0
