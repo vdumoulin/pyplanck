@@ -114,12 +114,16 @@ class Register(object):
         if employee is None:
             raise CredentialException("invalid employee login")
         self.employee = employee
+        self.logger.info("logged in employee " + employee.get_name() +
+                         " using token '" + token + "'")
 
     def logout_employee(self):
         """
         Logs out an employee.
         """
+        employee = self.employee
         self.employee = None
+        self.logger.info("logged out employee " + employee.get_name())
 
     def get_employee_name(self):
         """
@@ -221,6 +225,8 @@ class Register(object):
         """
         self._verify_credentials(self.employee, 1)
         self._log_count(count)
+        self.logger.info("employee " + self.get_employee_name() + " counted " +
+                         "the register")
 
     def get_register_count(self):
         """
