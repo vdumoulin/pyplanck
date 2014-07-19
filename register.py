@@ -511,10 +511,18 @@ class Register(object):
         amount : float
             Adjustment amount
         """
+        old_register_count = self.register_count
         if amount < 0:
             self._substract_from_register_count(abs(amount))
         else:
             self._add_to_register_count(amount)
+        new_register_count = self.register_count
+        self.count_logger.info(
+            "Adjustment by " + self.get_employee_name() + "\n" +
+            " Old count: %.2f$" % old_register_count + "\n" +
+            " New count: %.2f$" % new_register_count + "\n" +
+            "Difference: %.2f$" % amount
+        )
 
     def _add_to_register_count(self, amount):
         """
