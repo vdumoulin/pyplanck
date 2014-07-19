@@ -86,6 +86,21 @@ class CLI(object):
         except ValueError as e:
             logger.warning("invalid adjustment amount: " + e)
 
+    def checkout(self):
+        try:
+            self.register.checkout_order()
+        except CredentialException:
+            logger.warning("insufficient privileges to checkout order")
+
+    def count(self, count_string):
+        try:
+            count = float(count_string)
+            self.register.count_register(count)
+        except CredentialException:
+            logger.warning("insufficient privileges to count register")
+        except ValueError as e:
+            logger.warning("invalid count: " + e)
+
     valid_commands = {
         'quit': quit,
         'login': login,
@@ -132,6 +147,14 @@ class CLI(object):
                     self.add_custom(tokens[1], float(tokens[2]))
                 except ValueError:
                     logger.warning("price is not valid")
+            elif tokens[0] == "checkout":
+                self.checkout()
+            elif tokens[0] == "count":
+                if len(tokens) < 2:
+                    logger.warning("need an register count")
+                    continue
+                else:
+                    self.count(tokens[1])
             else:
                 self.add(tokens[0])
 
