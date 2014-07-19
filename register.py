@@ -18,6 +18,34 @@ from pyplanck.utils import (check_is_valid_item_name,
                             check_is_valid_menu_file_path,
                             check_is_valid_employees_file_path)
 
+# Logger for transactions
+transaction_logger = logging.getLogger('transaction')
+transaction_logger.setLevel(logging.INFO)
+transaction_handler = logging.StreamHandler()
+transaction_handler.setLevel(logging.INFO)
+transaction_formatter = logging.Formatter('%(asctime)s\n%(message)s')
+transaction_handler.setFormatter(transaction_formatter)
+transaction_logger.addHandler(transaction_handler)
+
+# Logger for register count
+count_logger = logging.getLogger('count')
+count_logger.setLevel(logging.INFO)
+count_handler = logging.StreamHandler()
+count_handler.setLevel(logging.INFO)
+count_formatter = logging.Formatter('%(asctime)s\n%(message)s')
+count_handler.setFormatter(transaction_formatter)
+count_logger.addHandler(transaction_handler)
+
+# Logger for other events
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - ' +
+                              '%(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 
 class Register(object):
     """
@@ -356,8 +384,8 @@ class Register(object):
                 menu.append(it)
 
         if errors_detected:
-            logging.warning("Some lines of the menu contained errors and " +
-                            "were ignored")
+            logger.warning("Some lines of the menu contained errors and " +
+                           "were ignored")
 
         return list(set(menu))
 
@@ -412,8 +440,8 @@ class Register(object):
                 employees_list.append(em)
 
         if errors_detected:
-            logging.warning("Some lines of the employee file contained " +
-                            "errors and were ignored")
+            logger.warning("Some lines of the employee file contained " +
+                           "errors and were ignored")
 
         return list(set(employees_list))
 
@@ -431,9 +459,8 @@ class Register(object):
             with io.open(file_path, 'wb') as f:
                 data = struct.pack('d', register_count)
                 f.write(data)
-            logging.warning("register count file not found, creating one " +
-                            "with value 0.0 at " +
-                            os.path.abspath(file_path))
+            logger.warning("register count file not found, creating one " +
+                           "with value 0.0 at " + os.path.abspath(file_path))
         else:
             with io.open(file_path, 'rb') as f:
                 (register_count, ) = struct.unpack('d', f.read(8))
@@ -495,4 +522,6 @@ class Register(object):
         """
         WRITEME
         """
+        log_string = self.get_employee_name() + "\n" + self.order_to_string()
+        transaction_logger.info(log_string)
         pass

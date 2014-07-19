@@ -14,6 +14,16 @@ from pyplanck.register import Register
 from pyplanck.exceptions import CredentialException, ItemNotFoundException
 
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+handler = logging.StreamHandler()
+handler.setLevel(logging.WARNING)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - ' +
+                              '%(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+
 class CLI(object):
     def quit(self):
         self.end = True
@@ -23,7 +33,7 @@ class CLI(object):
             self.register.login_employee(token)
             self.prompt = self.register.get_employee_name() + " > "
         except CredentialException:
-            logging.warning("invalid employee, unable to login")
+            logger.warning("invalid employee, unable to login")
 
     def logout(self):
         self.register.logout_employee()
@@ -33,19 +43,19 @@ class CLI(object):
         try:
             print self.register.get_register_count()
         except CredentialException:
-            logging.warning("insufficient privileges to print register count")
+            logger.warning("insufficient privileges to print register count")
 
     def print_order(self):
         try:
             print self.register.order_to_string()
         except CredentialException:
-            logging.warning("insufficient privileges to print current order")
+            logger.warning("insufficient privileges to print current order")
 
     def add(self, token):
         try:
             self.register.add(token)
         except CredentialException:
-            logging.warning("insufficient privileges to add an item")
+            logger.warning("insufficient privileges to add an item")
         except ValueError:
             pass
 
@@ -53,28 +63,28 @@ class CLI(object):
         try:
             self.register.add_custom(name, price)
         except CredentialException:
-            logging.warning("insufficient privileges to add a custom item")
+            logger.warning("insufficient privileges to add a custom item")
         except ValueError as e:
-            logging.warning(e.__str__)
+            logger.warning(e.__str__)
 
     def remove(self, token):
         try:
             self.register.remove(token)
         except CredentialException:
-            logging.warning("insufficient privileges to scan an item")
+            logger.warning("insufficient privileges to scan an item")
         except ValueError:
-            logging.warning("token does not correspond to any item")
+            logger.warning("token does not correspond to any item")
         except ItemNotFoundException:
-            logging.warning("item not in order, unable to remove it")
+            logger.warning("item not in order, unable to remove it")
 
     def adjust(self, token):
         try:
             amount = float(token)
             self.register.adjust(amount)
         except CredentialException:
-            logging.warning("insufficient privileges to adjust register count")
+            logger.warning("insufficient privileges to adjust register count")
         except ValueError as e:
-            logging.warning("invalid adjustment amount: " + e)
+            logger.warning("invalid adjustment amount: " + e)
 
     valid_commands = {
         'quit': quit,
@@ -95,7 +105,7 @@ class CLI(object):
                 self.quit()
             elif tokens[0] == "login":
                 if len(tokens) < 2:
-                    logging.warning("need a login token")
+                    logger.warning("need a login token")
                     continue
                 self.login(tokens[1])
             elif tokens[0] == "logout":
@@ -106,22 +116,22 @@ class CLI(object):
                 self.print_order()
             elif tokens[0] == "remove":
                 if len(tokens) < 2:
-                    logging.warning("need an item to remove")
+                    logger.warning("need an item to remove")
                     continue
                 self.remove(tokens[1])
             elif tokens[0] == "adjust_count":
                 if len(tokens) < 2:
-                    logging.warning("need an adjustment amount")
+                    logger.warning("need an adjustment amount")
                     continue
                 self.adjust(tokens[1])
             elif tokens[0] == "custom":
                 if len(tokens) < 3:
-                    logging.warning("need an name and a price")
+                    logger.warning("need an name and a price")
                     continue
                 try:
                     self.add_custom(tokens[1], float(tokens[2]))
                 except ValueError:
-                    logging.warning("price is not valid")
+                    logger.warning("price is not valid")
             else:
                 self.add(tokens[0])
 

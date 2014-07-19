@@ -9,12 +9,15 @@ __license__ = "GPL v2"
 __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
-import io, os, struct
+import io, os, struct, logging
 from nose.tools import raises, with_setup
 from pyplanck.register import Register
 from pyplanck.item import Item
 from pyplanck.employee import Employee
 from pyplanck.exceptions import CredentialException, ItemNotFoundException
+
+# No logging for unit tests
+logging.disable(logging.CRITICAL)
 
 
 def setup_module():
