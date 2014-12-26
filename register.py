@@ -332,7 +332,6 @@ class Register(object):
             raise ItemNotFoundException("item '" + item.name +
                                         "' not in current order")
 
-
     def _load_menu(self, file_path):
         """
         Loads and returns the menu.
