@@ -420,8 +420,8 @@ class Register(object):
                 menu.append(it)
 
         if errors_detected:
-            logger.warning("Some lines of the menu contained errors and " +
-                           "were ignored")
+            self.logger.warning("Some lines of the menu contained errors " +
+                                "and were ignored")
 
         return list(set(menu))
 
@@ -476,8 +476,8 @@ class Register(object):
                 employees_list.append(em)
 
         if errors_detected:
-            logger.warning("Some lines of the employee file contained " +
-                           "errors and were ignored")
+            self.logger.warning("Some lines of the employee file contained " +
+                                "errors and were ignored")
 
         return list(set(employees_list))
 
@@ -495,8 +495,9 @@ class Register(object):
             with io.open(file_path, 'wb') as f:
                 data = struct.pack('d', register_count)
                 f.write(data)
-            logger.warning("register count file not found, creating one " +
-                           "with value 0.0 at " + os.path.abspath(file_path))
+            self.logger.warning("register count file not found, creating " +
+                                "one with value 0.0 at " +
+                                os.path.abspath(file_path))
         else:
             with io.open(file_path, 'rb') as f:
                 (register_count, ) = struct.unpack('d', f.read(8))
