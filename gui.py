@@ -11,7 +11,7 @@ __email__ = "vincent.dumoulin@umontreal.ca"
 
 import argparse
 from Tkinter import Tk, BOTH
-from ttk import Frame, Style
+from ttk import Frame
 from pyplanck.register import Register
 
 
@@ -20,9 +20,16 @@ class GUI(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
         self.register = register
+        self.init_ui()
+
+    def init_ui(self):
+        # Full screen
+        screen_width = self.parent.winfo_screenwidth()
+        screen_height = self.parent.winfo_screenheight()
+        self.parent.geometry(
+            '%dx%d+%d+%d' % (screen_width, screen_height, 0, 0))
 
         self.parent.title("Caisse Planck")
-        self.style = Style()
         self.pack(fill=BOTH, expand=1)
 
 
@@ -52,6 +59,5 @@ if __name__ == "__main__":
                         log_path=log_path)
 
     root = Tk()
-    root.geometry("600x600+300+300")
     gui = GUI(root, register)
     root.mainloop()
