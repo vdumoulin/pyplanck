@@ -10,14 +10,15 @@ __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
 import argparse
-from Tkinter import Tk, BOTH
-from ttk import Frame
+from Tkinter import Tk, N, S, E, W
+from ttk import Frame, Button, Entry, Label
 from pyplanck.register import Register
 
 
 class GUI(Frame):
     def __init__(self, parent, register):
-        Frame.__init__(self, parent)
+        # TODO: clean this up
+        Frame.__init__(self, parent, padding=(3, 3, 3, 3))
         self.parent = parent
         self.register = register
         self.init_ui()
@@ -28,9 +29,35 @@ class GUI(Frame):
         screen_height = self.parent.winfo_screenheight()
         self.parent.geometry(
             '%dx%d+%d+%d' % (screen_width, screen_height, 0, 0))
-
         self.parent.title("Caisse Planck")
-        self.pack(fill=BOTH, expand=1)
+        self.parent.rowconfigure(0, weight=1)
+        self.parent.columnconfigure(0, weight=1)
+
+        self.grid(column=0, row=0, sticky=(N, S, E, W))
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=0)
+        self.columnconfigure(2, weight=0)
+
+        items_list = Frame(self, relief="sunken")
+        items_list.grid(row=1, column=0, rowspan=3, sticky=(N, S, E, W))
+
+        barcode_field = Entry(self)
+        barcode_field.grid(row=0, column=0, sticky=(N, E, W))
+
+        name_label = Label(self, text="Name")
+        name_label.grid(row=0, column=1, columnspan=2, sticky=(N, E, W))
+
+        some_button = Button(self, text="Something")
+        some_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+
+        ok_button = Button(self, text="Ok")
+        ok_button.grid(row=2, column=1, sticky=(S, E, W))
+
+        cancel_button = Button(self, text="Cancel")
+        cancel_button.grid(row=2, column=2, sticky=(S, E, W))
 
 
 if __name__ == "__main__":
