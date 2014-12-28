@@ -28,14 +28,12 @@ class GUI(Frame):
     def login(self, token):
         try:
             self.register.login_employee(token)
-            self.prompt = self.register.get_employee_name() + " > "
         except CredentialException:
             self.logger.warning("invalid employee token '" + token + "', " +
                                 "unable to login")
 
     def logout(self):
         self.register.logout_employee()
-        self.prompt = self.default_prompt
 
     def print_count(self):
         try:
