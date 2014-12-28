@@ -97,9 +97,7 @@ class GUI(Frame):
         command = self.barcode_field.get().strip()
         self.barcode_var.set("")
         tokens = command.split(" ")
-        if tokens[0] == "q":
-            self.quit()
-        elif tokens[0] == "login":
+        if tokens[0] == "login":
             if len(tokens) < 2:
                 self.logger.warning("need a login token")
                 return None
