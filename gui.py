@@ -139,7 +139,7 @@ class GUI(Frame):
                 self.add(tokens[0])
 
     def init_ui(self):
-        # Full screen
+        # Window configuration
         screen_width = self.parent.winfo_screenwidth()
         screen_height = self.parent.winfo_screenheight()
         self.parent.geometry(
