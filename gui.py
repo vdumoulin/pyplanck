@@ -11,6 +11,7 @@ __email__ = "vincent.dumoulin@umontreal.ca"
 
 import argparse
 from Tkinter import Tk, N, S, E, W, StringVar
+from tkSimpleDialog import askstring
 from ttk import Frame, Button, Entry, Label
 from pyplanck.register import Register
 from pyplanck.exceptions import CredentialException, ItemNotFoundException
@@ -25,15 +26,29 @@ class GUI(Frame):
         self.logger = register.get_events_logger()
         self.init_ui()
 
-    def login(self, token):
-        try:
-            self.register.login_employee(token)
-        except CredentialException:
-            self.logger.warning("invalid employee token '" + token + "', " +
-                                "unable to login")
+        self.login()
+
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
+
+    def login(self):
+        logged_in = False
+        while not logged_in:
+            token = None
+            while token is None:
+                token = askstring(title="Please login", prompt="Login")
+            try:
+                self.register.login_employee(token)
+                logged_in = True
+            except CredentialException:
+                self.logger.warning("invalid employee token '" + token +
+                                    "', " + "unable to login")
+        self.name_var.set(register.get_employee_name())
 
     def logout(self):
         self.register.logout_employee()
+        self.name_var.set("")
+        self.login()
 
     def print_count(self):
         try:
@@ -97,14 +112,7 @@ class GUI(Frame):
         command = self.barcode_field.get().strip()
         self.barcode_var.set("")
         tokens = command.split(" ")
-        if tokens[0] == "login":
-            if len(tokens) < 2:
-                self.logger.warning("need a login token")
-                return None
-            self.login(tokens[1])
-        elif tokens[0] == "logout":
-            self.logout()
-        elif tokens[0] == "print_count":
+        if tokens[0] == "print_count":
             self.print_count()
         elif tokens[0] == "print_order":
             self.print_order()
@@ -164,21 +172,18 @@ class GUI(Frame):
         self.barcode_field.bind("<KeyPress-Return>", self.parse_barcode_field)
         self.barcode_field.grid(row=0, column=0, sticky=(N, E, W))
 
-        self.name_var = StringVar(self, value="Name")
+        self.name_var = StringVar(self)
         self.name_label = Label(self, textvar=self.name_var)
         self.name_label.grid(row=0, column=1, columnspan=2, sticky=(N, E, W))
 
-        self.some_button = Button(self, text="Something")
-        self.some_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+        self.logout_button = Button(self, text="Logout", command=self.logout)
+        self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
 
         self.ok_button = Button(self, text="Ok")
         self.ok_button.grid(row=2, column=1, sticky=(S, E, W))
 
         self.cancel_button = Button(self, text="Cancel")
         self.cancel_button.grid(row=2, column=2, sticky=(S, E, W))
-
-        # Put focus in barcode field
-        self.barcode_field.focus_set()
 
 
 if __name__ == "__main__":
