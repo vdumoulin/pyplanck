@@ -29,9 +29,6 @@ class GUI(Frame):
         self.login()
         self.update_order()
 
-        # Put focus in barcode field
-        self.barcode_field.focus_set()
-
     def login(self):
         logged_in = False
         while not logged_in:
@@ -87,6 +84,14 @@ class GUI(Frame):
             self.logger.warning("token does not correspond to any item")
         except ItemNotFoundException:
             self.logger.warning("item not in order, unable to remove it")
+        finally:
+            self.update_order()
+
+    def clear_order(self):
+        try:
+            self.register.clear_order()
+        except CredentialException:
+            self.logger.warning("insufficient privileges to clear the order")
         finally:
             self.update_order()
 
@@ -158,6 +163,8 @@ class GUI(Frame):
         # TODO: format the total representation properly
         self.total_var.set(
             "Total: " + str(self.register.get_order_total()) + "$")
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
 
     def init_ui(self):
         # Window configuration
@@ -200,7 +207,8 @@ class GUI(Frame):
         self.ok_button = Button(self, text="Ok")
         self.ok_button.grid(row=3, column=1, sticky=(S, E, W))
 
-        self.cancel_button = Button(self, text="Cancel")
+        self.cancel_button = Button(self, text="Cancel",
+                                    command=self.clear_order)
         self.cancel_button.grid(row=3, column=2, sticky=(S, E, W))
 
 
