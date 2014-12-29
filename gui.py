@@ -42,6 +42,8 @@ class GUI(Frame):
                 self.logger.warning("invalid employee token '" + token +
                                     "', " + "unable to login")
         self.name_var.set(register.get_employee_name())
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
 
     def logout(self):
         self.register.logout_employee()
@@ -54,6 +56,8 @@ class GUI(Frame):
         except CredentialException:
             self.logger.warning("insufficient privileges to print register " +
                                 "count")
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
 
     def add(self, token):
         try:
@@ -64,6 +68,8 @@ class GUI(Frame):
             pass
         finally:
             self.update_order()
+            # Put focus in barcode field
+            self.barcode_field.focus_set()
 
     def add_custom(self, name, price):
         try:
@@ -74,6 +80,8 @@ class GUI(Frame):
             self.logger.warning(e.__str__)
         finally:
             self.update_order()
+            # Put focus in barcode field
+            self.barcode_field.focus_set()
 
     def remove(self, token):
         try:
@@ -86,6 +94,8 @@ class GUI(Frame):
             self.logger.warning("item not in order, unable to remove it")
         finally:
             self.update_order()
+            # Put focus in barcode field
+            self.barcode_field.focus_set()
 
     def clear_order(self):
         try:
@@ -94,6 +104,8 @@ class GUI(Frame):
             self.logger.warning("insufficient privileges to clear the order")
         finally:
             self.update_order()
+            # Put focus in barcode field
+            self.barcode_field.focus_set()
 
     def adjust(self):
         amount = askfloat(title="Enter adjustment amount",
@@ -106,12 +118,16 @@ class GUI(Frame):
                                     "register count")
             except ValueError as e:
                 self.logger.warning("invalid adjustment amount: " + e)
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
 
     def checkout(self):
         try:
             self.register.checkout_order()
         except CredentialException:
             self.logger.warning("insufficient privileges to checkout order")
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
 
     def count(self):
         # TODO: implement a proper register count
@@ -122,6 +138,8 @@ class GUI(Frame):
             except CredentialException:
                 self.logger.warning("insufficient privileges to count " +
                                     "register")
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
 
     def parse_barcode_field(self, event):
         command = self.barcode_field.get().strip()
@@ -160,6 +178,8 @@ class GUI(Frame):
         else:
             if tokens[0] != "":
                 self.add(tokens[0])
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
 
     def update_order(self):
         # TODO: add buttons representing items in order
