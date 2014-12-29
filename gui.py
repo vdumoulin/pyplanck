@@ -11,7 +11,7 @@ __email__ = "vincent.dumoulin@umontreal.ca"
 
 import argparse
 from Tkinter import Tk, N, S, E, W, StringVar
-from tkSimpleDialog import askstring
+from tkSimpleDialog import askstring, askfloat
 from ttk import Frame, Button, Entry, Label
 from pyplanck.register import Register
 from pyplanck.exceptions import CredentialException, ItemNotFoundException
@@ -111,14 +111,14 @@ class GUI(Frame):
         except CredentialException:
             self.logger.warning("insufficient privileges to checkout order")
 
-    def count(self, count_string):
-        try:
-            count = float(count_string)
-            self.register.count_register(count)
-        except CredentialException:
-            self.logger.warning("insufficient privileges to count register")
-        except ValueError as e:
-            self.logger.warning("invalid count: " + e)
+    def count(self):
+        count = askfloat(title="Enter register count", prompt="Register count")
+        if count is not None:
+            try:
+                self.register.count_register(count)
+            except CredentialException:
+                self.logger.warning("insufficient privileges to count " +
+                                    "register")
 
     def parse_barcode_field(self, event):
         command = self.barcode_field.get().strip()
@@ -179,8 +179,13 @@ class GUI(Frame):
         self.grid(column=0, row=0, sticky=(N, S, E, W))
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=0)
-        self.rowconfigure(3, weight=0)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
+        self.rowconfigure(6, weight=1)
+        self.rowconfigure(7, weight=0)
+        self.rowconfigure(8, weight=0)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
         self.columnconfigure(2, weight=0)
@@ -193,23 +198,50 @@ class GUI(Frame):
         self.barcode_field.bind("<KeyPress-Return>", self.parse_barcode_field)
         self.barcode_field.grid(row=0, column=0, sticky=(N, E, W))
 
+        # private JLabel benevoleLabel;
+        # private JLabel employeLabel;
         self.name_var = StringVar(self)
         self.name_label = Label(self, textvar=self.name_var)
         self.name_label.grid(row=0, column=1, columnspan=2, sticky=(N, E, W))
 
-        self.logout_button = Button(self, text="Logout", command=self.logout)
+        self.logout_button = Button(self, text="Logout",
+                                    command=self.logout)
         self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+        # private JButton countButton;
+        self.count_button = Button(self, text="Count register",
+                                   command=self.count)
+        self.count_button.grid(row=2, column=1, columnspan=2, sticky=(E, W))
+        # private JButton ajustementButton;
+        # self.logout_button = Button(self, text="Logout",
+        #                             command=self.logout)
+        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+        # private JButton montantArbButton;
+        # self.logout_button = Button(self, text="Logout",
+        #                             command=self.logout)
+        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+        # private JButton editMenuButton;
+        # self.logout_button = Button(self, text="Logout",
+        #                             command=self.logout)
+        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+        # private JButton editEmployesButton;
+        # self.logout_button = Button(self, text="Logout",
+        #                             command=self.logout)
+        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+        # private JButton viewLogsButton;
+        # self.logout_button = Button(self, text="Logout",
+        #                             command=self.logout)
+        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
 
         self.total_var = StringVar(self, value="Total: 0.00$")
         self.total_label = Label(self, textvar=self.total_var)
-        self.total_label.grid(row=2, column=1, columnspan=2, sticky=(S, E, W))
+        self.total_label.grid(row=7, column=1, columnspan=2, sticky=(S, E, W))
 
         self.ok_button = Button(self, text="Ok")
-        self.ok_button.grid(row=3, column=1, sticky=(S, E, W))
+        self.ok_button.grid(row=8, column=1, sticky=(S, E, W))
 
         self.cancel_button = Button(self, text="Cancel",
                                     command=self.clear_order)
-        self.cancel_button.grid(row=3, column=2, sticky=(S, E, W))
+        self.cancel_button.grid(row=8, column=2, sticky=(S, E, W))
 
 
 if __name__ == "__main__":
