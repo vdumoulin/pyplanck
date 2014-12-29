@@ -181,6 +181,13 @@ class Register(object):
         item = self._find_in_order(token)
         self._remove_from_order(item)
 
+    def get_order_summary(self):
+        """
+        WRITEME
+        """
+        return [(item.get_barcode(), item.get_name(), quantity)
+                for item, quantity in self.order.items()]
+
     def clear_order(self):
         """
         Clear the register's order.
@@ -209,6 +216,13 @@ class Register(object):
         for (item, quantity) in self.order.items():
             rval += item.name + " x " + str(quantity) + "\n"
         return rval.strip()
+
+    def get_order_total(self):
+        """
+        WRITEME
+        """
+        return sum(item.get_price() * quantity
+                   for item, quantity in self.order.items())
 
     # -------------------------------------------------------------------------
     #                          REGISTER COUNT HANDLING

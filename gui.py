@@ -27,6 +27,7 @@ class GUI(Frame):
         self.init_ui()
 
         self.login()
+        self.update_order()
 
         # Put focus in barcode field
         self.barcode_field.focus_set()
@@ -64,6 +65,8 @@ class GUI(Frame):
             self.logger.warning("insufficient privileges to add an item")
         except ValueError:
             pass
+        finally:
+            self.update_order()
 
     def add_custom(self, name, price):
         try:
@@ -72,6 +75,8 @@ class GUI(Frame):
             self.logger.warning("insufficient privileges to add a custom item")
         except ValueError as e:
             self.logger.warning(e.__str__)
+        finally:
+            self.update_order()
 
     def remove(self, token):
         try:
@@ -82,6 +87,8 @@ class GUI(Frame):
             self.logger.warning("token does not correspond to any item")
         except ItemNotFoundException:
             self.logger.warning("item not in order, unable to remove it")
+        finally:
+            self.update_order()
 
     def adjust(self, token):
         try:
@@ -146,6 +153,12 @@ class GUI(Frame):
             if tokens[0] != "":
                 self.add(tokens[0])
 
+    def update_order(self):
+        # TODO: add buttons representing items in order
+        # TODO: format the total representation properly
+        self.total_var.set(
+            "Total: " + str(self.register.get_order_total()) + "$")
+
     def init_ui(self):
         # Window configuration
         screen_width = self.parent.winfo_screenwidth()
@@ -159,7 +172,8 @@ class GUI(Frame):
         self.grid(column=0, row=0, sticky=(N, S, E, W))
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=1)
+        self.rowconfigure(2, weight=0)
+        self.rowconfigure(3, weight=0)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
         self.columnconfigure(2, weight=0)
@@ -179,11 +193,15 @@ class GUI(Frame):
         self.logout_button = Button(self, text="Logout", command=self.logout)
         self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
 
+        self.total_var = StringVar(self, value="Total: 0.00$")
+        self.total_label = Label(self, textvar=self.total_var)
+        self.total_label.grid(row=2, column=1, columnspan=2, sticky=(S, E, W))
+
         self.ok_button = Button(self, text="Ok")
-        self.ok_button.grid(row=2, column=1, sticky=(S, E, W))
+        self.ok_button.grid(row=3, column=1, sticky=(S, E, W))
 
         self.cancel_button = Button(self, text="Cancel")
-        self.cancel_button.grid(row=2, column=2, sticky=(S, E, W))
+        self.cancel_button.grid(row=3, column=2, sticky=(S, E, W))
 
 
 if __name__ == "__main__":

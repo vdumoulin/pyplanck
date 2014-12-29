@@ -215,6 +215,10 @@ def test_register_remove_custom():
     assert register.order == final_order
 
 
+def test_register_get_order_summary():
+    assert False
+
+
 def test_register_clear_order():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
                         'tmp/register_count.bin', 'tmp/')
@@ -269,6 +273,10 @@ def test_register_order_to_string():
     correct_representation = ['Chocolate bar x 1', 'Gum x 1']
     assert all([line in correct_representation for line in representation])
     assert all([line in representation for line in correct_representation])
+
+
+def test_register_get_order_total():
+    assert False
 
 
 def test_register_get_register_count():
