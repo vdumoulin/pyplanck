@@ -95,15 +95,17 @@ class GUI(Frame):
         finally:
             self.update_order()
 
-    def adjust(self, token):
-        try:
-            amount = float(token)
-            self.register.adjust(amount)
-        except CredentialException:
-            self.logger.warning("insufficient privileges to adjust register " +
-                                "count")
-        except ValueError as e:
-            self.logger.warning("invalid adjustment amount: " + e)
+    def adjust(self):
+        amount = askfloat(title="Enter adjustment amount",
+                          prompt="Adjustment amount")
+        if amount is not None:
+            try:
+                self.register.adjust(amount)
+            except CredentialException:
+                self.logger.warning("insufficient privileges to adjust " +
+                                    "register count")
+            except ValueError as e:
+                self.logger.warning("invalid adjustment amount: " + e)
 
     def checkout(self):
         try:
@@ -112,6 +114,7 @@ class GUI(Frame):
             self.logger.warning("insufficient privileges to checkout order")
 
     def count(self):
+        # TODO: implement a proper register count
         count = askfloat(title="Enter register count", prompt="Register count")
         if count is not None:
             try:
@@ -207,14 +210,13 @@ class GUI(Frame):
         self.logout_button = Button(self, text="Logout",
                                     command=self.logout)
         self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
-        # private JButton countButton;
         self.count_button = Button(self, text="Count register",
                                    command=self.count)
         self.count_button.grid(row=2, column=1, columnspan=2, sticky=(E, W))
         # private JButton ajustementButton;
-        # self.logout_button = Button(self, text="Logout",
-        #                             command=self.logout)
-        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+        self.adjust_button = Button(self, text="Register adjustment",
+                                    command=self.adjust)
+        self.adjust_button.grid(row=3, column=1, columnspan=2, sticky=(E, W))
         # private JButton montantArbButton;
         # self.logout_button = Button(self, text="Logout",
         #                             command=self.logout)
