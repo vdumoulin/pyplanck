@@ -71,17 +71,23 @@ class GUI(Frame):
             # Put focus in barcode field
             self.barcode_field.focus_set()
 
-    def add_custom(self, name, price):
-        try:
-            self.register.add_custom(name, price)
-        except CredentialException:
-            self.logger.warning("insufficient privileges to add a custom item")
-        except ValueError as e:
-            self.logger.warning(e.__str__)
-        finally:
-            self.update_order()
-            # Put focus in barcode field
-            self.barcode_field.focus_set()
+    def add_custom(self):
+        name = askstring(title="Enter item name", prompt="Item name")
+        if name is not None:
+            price = askfloat(title="Enter item price",
+                             prompt="Item price")
+            if price is not None:
+                try:
+                    self.register.add_custom(name, price)
+                except CredentialException:
+                    self.logger.warning("insufficient privileges to add " +
+                                        "a custom item")
+                except ValueError as e:
+                    self.logger.warning(e.__str__)
+                finally:
+                    self.update_order()
+        # Put focus in barcode field
+        self.barcode_field.focus_set()
 
     def remove(self, token):
         try:
@@ -233,14 +239,14 @@ class GUI(Frame):
         self.count_button = Button(self, text="Count register",
                                    command=self.count)
         self.count_button.grid(row=2, column=1, columnspan=2, sticky=(E, W))
-        # private JButton ajustementButton;
         self.adjust_button = Button(self, text="Register adjustment",
                                     command=self.adjust)
         self.adjust_button.grid(row=3, column=1, columnspan=2, sticky=(E, W))
         # private JButton montantArbButton;
-        # self.logout_button = Button(self, text="Logout",
-        #                             command=self.logout)
-        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
+        self.custom_item_button = Button(self, text="Custom item",
+                                         command=self.add_custom)
+        self.custom_item_button.grid(row=4, column=1, columnspan=2,
+                                     sticky=(E, W))
         # private JButton editMenuButton;
         # self.logout_button = Button(self, text="Logout",
         #                             command=self.logout)
