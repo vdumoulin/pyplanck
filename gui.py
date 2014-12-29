@@ -227,8 +227,6 @@ class GUI(Frame):
         self.barcode_field.bind("<KeyPress-Return>", self.parse_barcode_field)
         self.barcode_field.grid(row=0, column=0, sticky=(N, E, W))
 
-        # private JLabel benevoleLabel;
-        # private JLabel employeLabel;
         self.name_var = StringVar(self)
         self.name_label = Label(self, textvar=self.name_var)
         self.name_label.grid(row=0, column=1, columnspan=2, sticky=(N, E, W))
@@ -242,23 +240,10 @@ class GUI(Frame):
         self.adjust_button = Button(self, text="Register adjustment",
                                     command=self.adjust)
         self.adjust_button.grid(row=3, column=1, columnspan=2, sticky=(E, W))
-        # private JButton montantArbButton;
         self.custom_item_button = Button(self, text="Custom item",
                                          command=self.add_custom)
         self.custom_item_button.grid(row=4, column=1, columnspan=2,
                                      sticky=(E, W))
-        # private JButton editMenuButton;
-        # self.logout_button = Button(self, text="Logout",
-        #                             command=self.logout)
-        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
-        # private JButton editEmployesButton;
-        # self.logout_button = Button(self, text="Logout",
-        #                             command=self.logout)
-        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
-        # private JButton viewLogsButton;
-        # self.logout_button = Button(self, text="Logout",
-        #                             command=self.logout)
-        # self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
 
         self.total_var = StringVar(self, value="Total: 0.00$")
         self.total_label = Label(self, textvar=self.total_var)
