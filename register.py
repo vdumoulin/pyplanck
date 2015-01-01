@@ -9,7 +9,7 @@ __license__ = "GPL v2"
 __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
-import io, os, logging, struct
+import copy, io, os, logging, struct
 from logging.handlers import TimedRotatingFileHandler
 from pyplanck.item import Item
 from pyplanck.employee import Employee
@@ -181,12 +181,11 @@ class Register(object):
         item = self._find_in_order(token)
         self._remove_from_order(item)
 
-    def get_order_summary(self):
+    def get_order(self):
         """
-        WRITEME
+        Returns a copy of the current order
         """
-        return [(item.get_barcode(), item.get_name(), quantity)
-                for item, quantity in self.order.items()]
+        return copy.deepcopy(self.order)
 
     def clear_order(self):
         """
@@ -219,7 +218,7 @@ class Register(object):
 
     def get_order_total(self):
         """
-        WRITEME
+        Return the current order's total price
         """
         return sum(item.get_price() * quantity
                    for item, quantity in self.order.items())

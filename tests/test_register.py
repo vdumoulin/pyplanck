@@ -213,8 +213,17 @@ def test_register_remove_custom():
     assert register.order == final_order
 
 
-def test_register_get_order_summary():
-    assert False
+def test_register_get_order():
+    register = Register('tmp/menu.txt', 'tmp/employees.txt',
+                        'tmp/register_count.bin', 'tmp/')
+    register.login_employee("admin")
+    items = [
+        Item("Chocolate bar", 1.0, "001", category="Candy", shortcut=None),
+        Item("gum", 0.47, "custom_gum", category="Custom", shortcut=None)
+    ]
+    order = {items[0]: 1, items[1]: 1}
+    register.order = order
+    assert register.get_order() == order
 
 
 def test_register_clear_order():
@@ -273,8 +282,26 @@ def test_register_order_to_string():
     assert all([line in representation for line in correct_representation])
 
 
-def test_register_get_order_total():
-    assert False
+def test_register_get_order_total_non_empty_order():
+    register = Register('tmp/menu.txt', 'tmp/employees.txt',
+                        'tmp/register_count.bin', 'tmp/')
+    register.login_employee("admin")
+    items = [
+        Item("Chocolate bar", 1.0, "001", category="Candy", shortcut=None),
+        Item("gum", 0.47, "custom_gum", category="Custom", shortcut=None)
+    ]
+    order = {items[0]: 1, items[1]: 1}
+    register.order = order
+    assert register.get_order_total() == 1.47
+
+
+def test_register_get_order_total_empty_order():
+    register = Register('tmp/menu.txt', 'tmp/employees.txt',
+                        'tmp/register_count.bin', 'tmp/')
+    register.login_employee("admin")
+    order = dict()
+    register.order = order
+    assert register.get_order_total() == 0.0
 
 
 def test_register_get_register_count():
