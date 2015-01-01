@@ -10,7 +10,7 @@ __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
 import argparse
-from Tkinter import Tk, N, S, E, W, StringVar
+from Tkinter import Tk, N, S, E, W, StringVar, Listbox
 from tkSimpleDialog import askstring, askfloat
 from ttk import Frame, Button, Entry, Label
 from pyplanck.register import Register
@@ -187,7 +187,9 @@ class GUI(Frame):
         self.barcode_field.focus_set()
 
     def update_order(self):
-        # TODO: add buttons representing items in order
+        self.items_var.set(tuple(
+            item.get_name() + " x " + str(quantity) for
+            item, quantity in self.register.get_order().items()))
         self.total_var.set("Total: %0.2f$" % self.register.get_order_total())
         # Put focus in barcode field
         self.barcode_field.focus_set()
@@ -208,16 +210,15 @@ class GUI(Frame):
         self.rowconfigure(2, weight=1)
         self.rowconfigure(3, weight=1)
         self.rowconfigure(4, weight=1)
-        self.rowconfigure(5, weight=1)
-        self.rowconfigure(6, weight=1)
         self.rowconfigure(7, weight=0)
         self.rowconfigure(8, weight=0)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
         self.columnconfigure(2, weight=0)
 
-        self.items_list = Frame(self, relief="sunken")
-        self.items_list.grid(row=1, column=0, rowspan=3, sticky=(N, S, E, W))
+        self.items_var = StringVar()
+        self.items_list = Listbox(self, height=10, listvariable=self.items_var)
+        self.items_list.grid(row=1, column=0, rowspan=8, sticky=(N, S, E, W))
 
         self.barcode_var = StringVar(self)
         self.barcode_field = Entry(self, textvariable=self.barcode_var)
