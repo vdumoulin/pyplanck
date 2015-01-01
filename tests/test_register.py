@@ -208,8 +208,6 @@ def test_register_remove_custom():
     initial_order = {items[0]: 1, items[1]: 1}
     final_order = {items[0]: 1}
 
-    correct_added_item = Item("gum", 0.47, "custom_gum", category="Custom",
-                              shortcut=None)
     register.order = initial_order
     register.remove("custom_gum")
     assert register.order == final_order
