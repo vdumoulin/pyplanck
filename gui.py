@@ -19,7 +19,6 @@ from pyplanck.exceptions import CredentialException, ItemNotFoundException
 
 class GUI(Frame):
     def __init__(self, parent, register):
-        # TODO: clean this up
         Frame.__init__(self, parent, padding=(3, 3, 3, 3))
         self.parent = parent
         self.register = register
@@ -189,9 +188,7 @@ class GUI(Frame):
 
     def update_order(self):
         # TODO: add buttons representing items in order
-        # TODO: format the total representation properly
-        self.total_var.set(
-            "Total: " + str(self.register.get_order_total()) + "$")
+        self.total_var.set("Total: %0.2f$" % self.register.get_order_total())
         # Put focus in barcode field
         self.barcode_field.focus_set()
 
