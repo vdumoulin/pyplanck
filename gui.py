@@ -138,6 +138,7 @@ class GUI(Frame):
 
     def count(self, *args):
         # TODO: implement a proper register count
+        # TODO: add dialog box telling how register count went
         count = askfloat(title="Enter register count", prompt="Register count")
         if count is not None:
             try:
@@ -227,9 +228,12 @@ class GUI(Frame):
         self.barcode_field.bind("<Return>", self.parse_barcode_field)
         self.barcode_field.grid(row=0, column=0, sticky=(N, E, W))
 
+        self.benevole_label = Label(self, text="Volunteer:")
+        self.benevole_label.grid(row=0, column=1, sticky=(N, W))
+
         self.name_var = StringVar(self)
         self.name_label = Label(self, textvar=self.name_var)
-        self.name_label.grid(row=0, column=1, columnspan=2, sticky=(N, E, W))
+        self.name_label.grid(row=0, column=2, sticky=(N, W))
 
 
         self.parent.bind("<F1>", self.logout)
