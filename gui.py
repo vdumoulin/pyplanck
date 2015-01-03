@@ -42,9 +42,9 @@ class GUI(Frame):
                                     "', " + "unable to login")
         self.name_var.set(register.get_employee_name())
         # Put focus in barcode field
-        self.barcode_field.focus_set()
+        self.barcode_field.focus()
 
-    def logout(self):
+    def logout(self, *args):
         self.register.logout_employee()
         self.name_var.set("")
         self.login()
@@ -56,7 +56,7 @@ class GUI(Frame):
             self.logger.warning("insufficient privileges to print register " +
                                 "count")
         # Put focus in barcode field
-        self.barcode_field.focus_set()
+        self.barcode_field.focus()
 
     def add(self, token):
         try:
@@ -68,9 +68,9 @@ class GUI(Frame):
         finally:
             self.update_order()
             # Put focus in barcode field
-            self.barcode_field.focus_set()
+            self.barcode_field.focus()
 
-    def add_custom(self):
+    def add_custom(self, *args):
         name = askstring(title="Enter item name", prompt="Item name")
         if name is not None:
             price = askfloat(title="Enter item price",
@@ -86,7 +86,7 @@ class GUI(Frame):
                 finally:
                     self.update_order()
         # Put focus in barcode field
-        self.barcode_field.focus_set()
+        self.barcode_field.focus()
 
     def remove(self, token):
         try:
@@ -100,9 +100,9 @@ class GUI(Frame):
         finally:
             self.update_order()
             # Put focus in barcode field
-            self.barcode_field.focus_set()
+            self.barcode_field.focus()
 
-    def clear_order(self):
+    def clear_order(self, *args):
         try:
             self.register.clear_order()
         except CredentialException:
@@ -110,9 +110,9 @@ class GUI(Frame):
         finally:
             self.update_order()
             # Put focus in barcode field
-            self.barcode_field.focus_set()
+            self.barcode_field.focus()
 
-    def adjust(self):
+    def adjust(self, *args):
         amount = askfloat(title="Enter adjustment amount",
                           prompt="Adjustment amount")
         if amount is not None:
@@ -124,9 +124,9 @@ class GUI(Frame):
             except ValueError as e:
                 self.logger.warning("invalid adjustment amount: " + e)
         # Put focus in barcode field
-        self.barcode_field.focus_set()
+        self.barcode_field.focus()
 
-    def checkout(self):
+    def checkout(self, *args):
         try:
             self.register.checkout_order()
         except CredentialException:
@@ -134,9 +134,9 @@ class GUI(Frame):
         finally:
             self.update_order()
         # Put focus in barcode field
-        self.barcode_field.focus_set()
+        self.barcode_field.focus()
 
-    def count(self):
+    def count(self, *args):
         # TODO: implement a proper register count
         count = askfloat(title="Enter register count", prompt="Register count")
         if count is not None:
@@ -146,7 +146,7 @@ class GUI(Frame):
                 self.logger.warning("insufficient privileges to count " +
                                     "register")
         # Put focus in barcode field
-        self.barcode_field.focus_set()
+        self.barcode_field.focus()
 
     def parse_barcode_field(self, event):
         command = self.barcode_field.get().strip()
@@ -186,7 +186,7 @@ class GUI(Frame):
             if tokens[0] != "":
                 self.add(tokens[0])
         # Put focus in barcode field
-        self.barcode_field.focus_set()
+        self.barcode_field.focus()
 
     def update_order(self):
         self.items_var.set(tuple(
@@ -194,7 +194,7 @@ class GUI(Frame):
             item, quantity in self.register.get_order().items()))
         self.total_var.set("Total: %0.2f$" % self.register.get_order_total())
         # Put focus in barcode field
-        self.barcode_field.focus_set()
+        self.barcode_field.focus()
 
     def init_ui(self):
         # Window configuration
@@ -224,23 +224,31 @@ class GUI(Frame):
 
         self.barcode_var = StringVar(self)
         self.barcode_field = Entry(self, textvariable=self.barcode_var)
-        self.barcode_field.bind("<KeyPress-Return>", self.parse_barcode_field)
+        self.barcode_field.bind("<Return>", self.parse_barcode_field)
         self.barcode_field.grid(row=0, column=0, sticky=(N, E, W))
 
         self.name_var = StringVar(self)
         self.name_label = Label(self, textvar=self.name_var)
         self.name_label.grid(row=0, column=1, columnspan=2, sticky=(N, E, W))
 
-        self.logout_button = Button(self, text="Logout",
+
+        self.parent.bind("<F1>", self.logout)
+        self.logout_button = Button(self, text="Logout (F1)",
                                     command=self.logout)
         self.logout_button.grid(row=1, column=1, columnspan=2, sticky=(E, W))
-        self.count_button = Button(self, text="Count register",
+
+        self.parent.bind("<F5>", self.count)
+        self.count_button = Button(self, text="Count register (F5)",
                                    command=self.count)
         self.count_button.grid(row=2, column=1, columnspan=2, sticky=(E, W))
-        self.adjust_button = Button(self, text="Register adjustment",
+
+        self.parent.bind("<F6>", self.adjust)
+        self.adjust_button = Button(self, text="Register adjustment (F6)",
                                     command=self.adjust)
         self.adjust_button.grid(row=3, column=1, columnspan=2, sticky=(E, W))
-        self.custom_item_button = Button(self, text="Custom item",
+
+        self.parent.bind("<F6>", self.add_custom)
+        self.custom_item_button = Button(self, text="Custom item (F7)",
                                          command=self.add_custom)
         self.custom_item_button.grid(row=4, column=1, columnspan=2,
                                      sticky=(E, W))
@@ -249,10 +257,12 @@ class GUI(Frame):
         self.total_label = Label(self, textvar=self.total_var)
         self.total_label.grid(row=7, column=1, columnspan=2, sticky=(S, E, W))
 
-        self.ok_button = Button(self, text="Ok")
+        self.parent.bind("<F12>", self.checkout)
+        self.ok_button = Button(self, text="Ok (F12)", command=self.checkout)
         self.ok_button.grid(row=8, column=1, sticky=(S, E, W))
 
-        self.cancel_button = Button(self, text="Cancel",
+        self.parent.bind("<Escape>", self.clear_order)
+        self.cancel_button = Button(self, text="Cancel (ESC)",
                                     command=self.clear_order)
         self.cancel_button.grid(row=8, column=2, sticky=(S, E, W))
 
