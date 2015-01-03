@@ -131,6 +131,8 @@ class GUI(Frame):
             self.register.checkout_order()
         except CredentialException:
             self.logger.warning("insufficient privileges to checkout order")
+        finally:
+            self.update_order()
         # Put focus in barcode field
         self.barcode_field.focus_set()
 
