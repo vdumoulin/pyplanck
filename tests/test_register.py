@@ -264,6 +264,23 @@ def test_register_checkout_order():
     assert register_count == 3.25
 
 
+def test_register_checkout_empty_order():
+    register = Register('tmp/menu.txt', 'tmp/employees.txt',
+                        'tmp/register_count.bin', 'tmp/')
+    register.login_employee("admin")
+
+    order = dict()
+
+    register.register_count = 1.5
+    register.order = order
+    register.checkout_order()
+    assert register.register_count == 1.5
+    assert register.order == {}
+    with io.open('tmp/register_count.bin', 'rb') as f:
+        (register_count, ) = struct.unpack('d', f.read(8))
+    assert register_count == 1.5
+
+
 def test_register_order_to_string():
     register = Register('tmp/menu.txt', 'tmp/employees.txt',
                         'tmp/register_count.bin', 'tmp/')

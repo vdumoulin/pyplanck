@@ -200,8 +200,8 @@ class Register(object):
         """
         self._verify_credentials(self.employee, 1)
         order_total = reduce(lambda x, y: x + y,
-                             [item.get_price() * quantity
-                              for (item, quantity) in self.order.items()])
+                             [item.get_price() * quantity for
+                              (item, quantity) in self.order.items()], 0)
         self._add_to_register_count(order_total)
         self._log_order()
         self.clear_order()
