@@ -1,8 +1,7 @@
 language: python
 python:
   - "2.7"
-  - "2.6"
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+  - "3.4"
 install:
-# command to run tests, e.g. python setup.py test
+  - pip install -q -r req-travis.txt
 script:  nosetests

@@ -8,6 +8,8 @@ __email__ = "vincent.dumoulin@umontreal.ca"
 
 import os
 
+import six
+
 
 def check_is_valid_name_string(name_string, string_type="name string"):
     """
@@ -16,7 +18,7 @@ def check_is_valid_name_string(name_string, string_type="name string"):
 
     A valid name string must be a non-empty string.
     """
-    if type(name_string) not in (str, unicode):
+    if not isinstance(name_string, six.string_types):
         raise ValueError(string_type + " must be a string")
     if len(name_string) == 0:
         raise ValueError(string_type + " must not be empty")
