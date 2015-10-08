@@ -9,10 +9,10 @@ __license__ = "GPL v2"
 __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
-from utils import (check_is_valid_employee_name,
-                   check_is_valid_employee_barcode,
-                   check_is_valid_employee_code,
-                   check_is_valid_employee_level)
+from .utils import (check_is_valid_employee_name,
+                    check_is_valid_employee_barcode,
+                    check_is_valid_employee_code,
+                    check_is_valid_employee_level)
 
 
 class Employee(object):

@@ -9,11 +9,11 @@ __license__ = "GPL v2"
 __maintainer__ = "Vincent Dumoulin"
 __email__ = "vincent.dumoulin@umontreal.ca"
 
-from pyplanck.utils import (check_is_valid_item_name,
-                            check_is_valid_item_price,
-                            check_is_valid_item_barcode,
-                            check_is_valid_item_category,
-                            check_is_valid_item_shortcut)
+from .utils import (check_is_valid_item_name,
+                    check_is_valid_item_price,
+                    check_is_valid_item_barcode,
+                    check_is_valid_item_category,
+                    check_is_valid_item_shortcut)
 
 
 class Item(object):
