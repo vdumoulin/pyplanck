@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-Command-line interface for the register
-"""
-__authors__ = "Vincent Dumoulin"
-__copyright__ = "Copyright 2014, Vincent Dumoulin"
-__credits__ = ["Vincent Dumoulin"]
-__license__ = "GPL v2"
-__maintainer__ = "Vincent Dumoulin"
-__email__ = "vincent.dumoulin@umontreal.ca"
+"""Command-line interface for the register."""
 
 import argparse
-from pyplanck.register import Register
-from pyplanck.exceptions import CredentialException, ItemNotFoundException
+
+from .register import Register
+from .exceptions import CredentialException, ItemNotFoundException
 
 
 class CLI(object):
@@ -21,7 +14,7 @@ class CLI(object):
     def login(self, token):
         try:
             self.register.login_employee(token)
-            self.prompt = self.register.get_employee_name() + " > "
+            self.prompt = self.register.employee_name + " > "
         except CredentialException:
             self.logger.warning("invalid employee token '" + token + "', " +
                                 "unable to login")
@@ -102,7 +95,7 @@ class CLI(object):
 
     def __init__(self, register, default_prompt="caisse-planck > "):
         self.register = register
-        self.logger = register.get_events_logger()
+        self.logger = register.events_logger
         self.default_prompt = default_prompt
         self.prompt = self.default_prompt
         self.end = False

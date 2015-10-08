@@ -1,155 +1,107 @@
 # -*- coding: utf-8 -*-
-__authors__ = "Vincent Dumoulin"
-__copyright__ = "Copyright 2014, Vincent Dumoulin"
-__credits__ = ["Vincent Dumoulin"]
-__license__ = "GPL v2"
-__maintainer__ = "Vincent Dumoulin"
-__email__ = "vincent.dumoulin@umontreal.ca"
-
+"""Utility functions."""
 import os
 
 import six
 
 
-def check_is_valid_name_string(name_string, string_type="name string"):
-    """
-    Checks that `name_string` is a valid name string, and raises an error
-    otherwise.
+def validate_name(name, type_='name'):
+    """Validates a name.
 
-    A valid name string must be a non-empty string.
-    """
-    if not isinstance(name_string, six.string_types):
-        raise ValueError(string_type + " must be a string")
-    if len(name_string) == 0:
-        raise ValueError(string_type + " must not be empty")
+    Parameters
+    ----------
+    name : :class:`object`
+        Name to validate.
+    type_ : :class:`str`, optional
+        What is being named (e.g. 'item name'). Defaults to ``'name'``.
 
+    Raises
+    ------
+    ValueError
+        If ``name`` is not a non-empty string.
 
-def check_is_valid_item_name(item_name):
     """
-    Checks that `item_name` is a valid item name, and raises an error
-    otherwise. Validity conditions are defined in `check_is_valid_name_string`.
-    """
-    check_is_valid_name_string(name_string=item_name, string_type="item name")
-
-
-def check_is_valid_item_barcode(item_barcode):
-    """
-    Checks that `item_barcode` is a valid item barcode, and raises an error
-    otherwise. Validity conditions are defined in `check_is_valid_name_string`.
-    """
-    check_is_valid_name_string(name_string=item_barcode,
-                               string_type="item barcode")
+    if not isinstance(name, six.string_types):
+        raise ValueError('{} must be a string'.format(type_))
+    if not name:
+        raise ValueError('{} must not be empty'.format(type_))
 
 
-def check_is_valid_item_category(item_category):
+def validate_amount(amount, type_='amount'):
+    """Validates an amount.
+
+    Parameters
+    ----------
+    amount : :class:`object`
+        Amount to validate.
+    type_ : class:`str`, optional
+        Type of amount (e.g. 'item price'). Defaults to ``'amount'``.
+
+    Raises
+    ------
+    ValueError
+        If ``amount`` is not a positive number.
+
     """
-    Checks that `item_category` is a valid item category, and raises an error
-    otherwise. Validity conditions are defined in `check_is_valid_name_string`.
-    """
-    check_is_valid_name_string(name_string=item_category,
-                               string_type="item category")
+    if not isinstance(amount, (float,) + six.integer_types):
+        raise ValueError('{} must be a number'.format(type_))
+    if amount < 0:
+        raise ValueError('{} must be positive'.format(type_))
 
 
-def check_is_valid_item_shortcut(item_shortcut):
-    """
-    Checks that `item_shortcut` is a valid item shortcut, and raises an error
-    otherwise. Validity conditions are defined in `check_is_valid_name_string`.
+def validate_item_shortcut(item_shortcut):
+    """Validates an item shortcut.
+
+    Parameters
+    ----------
+    item_shortcut : :class:`object`
+        Item shortcut to validate.
+
+    Raises
+    ------
+    ValueError
+        If ``item_shortcut`` is not ``None`` or a not valid name.
+
     """
     if item_shortcut is not None:
-        check_is_valid_name_string(name_string=item_shortcut,
-                                   string_type="item shortcut")
+        validate_name(item_shortcut, 'item shortcut')
 
 
-def check_is_valid_amount(amount, amount_type="amount"):
+def validate_employee_level(employee_level):
+    """Validates an employee level.
+
+    Parameters
+    ----------
+    employee_level : :class:`object`
+
+    Raises
+    ------
+    ValueError
+        If ``employee_level`` is not an integer in {0, 1, 2}.
+
     """
-    Checks that `amount` is a money amount, and raises an error otherwise.
-
-    A valid money amount must be a positive (>= 0) float or int.
-    """
-    if type(amount) not in (float, int):
-        raise ValueError(amount_type + " must be either float or int")
-    if amount < 0:
-        raise ValueError(amount_type + " must be positive")
-
-
-def check_is_valid_item_price(item_price):
-    """
-    Checks that `item_price` is a valid item price, and raises an error
-    otherwise. Validity conditions are defined in `check_is_valid_amount`.
-    """
-    check_is_valid_amount(item_price, "item_price")
-
-
-def check_is_valid_employee_name(employee_name):
-    """
-    Checks that `employee_name` is a valid employee name, and raises an error
-    otherwise. Validity conditions are defined in `check_is_valid_name_string`.
-    """
-    check_is_valid_name_string(name_string=employee_name,
-                               string_type="employee name")
-
-
-def check_is_valid_employee_barcode(employee_barcode):
-    """
-    Checks that `employee_barcode` is a valid employee barcode, and raises an
-    error otherwise. Validity conditions are defined in
-    `check_is_valid_name_string`.
-    """
-    check_is_valid_name_string(name_string=employee_barcode,
-                               string_type="employee barcode")
-
-
-def check_is_valid_employee_code(employee_code):
-    """
-    Checks that `employee_code` is a valid employee code, and raises an error
-    otherwise. Validity conditions are defined in `check_is_valid_name_string`.
-    """
-    check_is_valid_name_string(name_string=employee_code,
-                               string_type="employee code")
-
-
-def check_is_valid_employee_level(employee_level):
-    """
-    Checks that `employee_level` is a valid employee level, and raises an error
-    otherwise.
-
-    A valid employee level is an int in {0, 1, 2}.
-    """
-    if type(employee_level) is not int:
-        raise ValueError("employee level must be an int")
+    if not isinstance(employee_level, six.integer_types):
+        raise ValueError('employee level must be an integer')
     if employee_level not in (0, 1, 2):
-        raise ValueError("employee level must be in {0, 1, 2}")
+        raise ValueError('employee level must be in {0, 1, 2}')
 
 
-def check_is_valid_count(count):
-    """
-    Checks that `count` is a valid register count, and raises an error
-    otherwise. Validity conditions are defined in `check_is_valid_amount`.
-    """
-    check_is_valid_amount(count, "count")
+def validate_file_path(file_path, type_='file'):
+    """Validates a file path.
 
+    Parameters
+    ----------
+    file_path : :class:`str`
+        File path to validate.
+    type_ : :class:`str`, optional
+        What the path corresponds to (e.g. 'menu file'). Defaults to
+        ``'file'``.
 
-def check_is_valid_file_path(file_path, file_type="file"):
-    """
-    Checks that `file_path` is a valid file path, and raises an error
-    otherwise.
+    Raises
+    ------
+    ValueError
+        If ``file_path`` does not exist.
+
     """
     if not os.path.isfile(file_path):
-        raise ValueError("path for " + file_type + " file does not exist")
-
-
-def check_is_valid_menu_file_path(menu_file_path):
-    """
-    Checks that `menu_file_path` is a valid menu file path, and raises an error
-    otherwise.
-    """
-    check_is_valid_file_path(file_path=menu_file_path, file_type="menu")
-
-
-def check_is_valid_employees_file_path(employees_file_path):
-    """
-    Checks that `employees_file_path` is a valid employees file path, and
-    raises an error otherwise.
-    """
-    check_is_valid_file_path(file_path=employees_file_path,
-                             file_type="employees")
+        raise ValueError("path for file '{}' does not exist".format(type_))

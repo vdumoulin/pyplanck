@@ -1,358 +1,330 @@
 # -*- coding: utf-8 -*-
-"""
-Register-related classes
-"""
-__authors__ = "Vincent Dumoulin"
-__copyright__ = "Copyright 2014, Vincent Dumoulin"
-__credits__ = ["Vincent Dumoulin"]
-__license__ = "GPL v2"
-__maintainer__ = "Vincent Dumoulin"
-__email__ = "vincent.dumoulin@umontreal.ca"
-
-import copy, io, os, logging, struct
+"""Register-related classes."""
+import io
+import os
+import logging
+import struct
+from collections import OrderedDict
 from logging.handlers import TimedRotatingFileHandler
-from pyplanck.item import Item
-from pyplanck.employee import Employee
-from pyplanck.exceptions import CredentialException, ItemNotFoundException
-from pyplanck.utils import (check_is_valid_item_name,
-                            check_is_valid_item_price,
-                            check_is_valid_count,
-                            check_is_valid_menu_file_path,
-                            check_is_valid_employees_file_path)
+
+from .immutables import Employee, Item, validate_employee, validate_item
+from .exceptions import CredentialException, ItemNotFoundException
+from .utils import validate_amount, validate_file_path
 
 
 class Register(object):
-    """
-    Class implementing the register's functionalities.
+    """Class implementing the register's functionalities.
 
     Parameters
     ----------
-    menu_file_path : str
-        Path to the menu file
-    employees_file_path : str
-        Path to the employees file
-    register_count_file_path : str
-        Path to the register count file
+    menu_file_path : :class:`str`
+        Path to the menu file.
+    employees_file_path : :class:`str`
+        Path to the employees file.
+    register_count_file_path : :class:`str`
+        Path to the register count file.
+    log_path : :class:`str`
+        Where to save logs.
+
     """
     def __init__(self, menu_file_path, employees_file_path,
                  register_count_file_path, log_path):
-        # Input sanitization
-        check_is_valid_menu_file_path(menu_file_path)
-        check_is_valid_employees_file_path(employees_file_path)
 
         self.register_count_file_path = register_count_file_path
-        self.log_path = log_path
+
+        self.transaction_logger = self.create_logger(
+            name='transaction',
+            log_path=os.path.join(log_path, 'transactions.log'),
+            log_format='%(asctime)s\n%(message)s')
+        self.count_logger = self.create_logger(
+            name='count',
+            log_path=os.path.join(log_path, 'counts.log'),
+            log_format='%(asctime)s\n%(message)s')
+        self.logger = self.create_logger(
+            name='event',
+            log_path=os.path.join(log_path, 'events.log'),
+            log_format='%(asctime)s - %(levelname)s - %(message)s')
+
+        validate_file_path(menu_file_path, 'menu')
+        validate_file_path(employees_file_path, 'employees')
 
         self.menu = self._load_menu(menu_file_path)
         self.employees = self._load_employees(employees_file_path)
-        self.register_count = self._load_register_count(
-            self.register_count_file_path
-        )
+        self._register_count = self._load_register_count(
+            self.register_count_file_path)
 
         self.employee = None
-        self.order = {}
+        self.order_dict = OrderedDict()
 
-        # Logger for transactions
-        transaction_logger = logging.getLogger('transaction')
-        transaction_logger.setLevel(logging.INFO)
-        transaction_handler = TimedRotatingFileHandler(self.log_path +
-                                                       'transactions.log',
-                                                       'midnight')
-        transaction_handler.setLevel(logging.INFO)
-        transaction_formatter = logging.Formatter('%(asctime)s\n%(message)s')
-        transaction_handler.setFormatter(transaction_formatter)
-        transaction_logger.addHandler(transaction_handler)
-        self.transaction_logger = transaction_logger
-
-        # Logger for register count
-        count_logger = logging.getLogger('count')
-        count_logger.setLevel(logging.INFO)
-        count_handler = TimedRotatingFileHandler(self.log_path +
-                                                 'counts.log',
-                                                 'midnight')
-        count_handler.setLevel(logging.INFO)
-        count_formatter = logging.Formatter('%(asctime)s\n%(message)s')
-        count_handler.setFormatter(count_formatter)
-        count_logger.addHandler(count_handler)
-        self.count_logger = count_logger
-
-        # Logger for other events
-        logger = logging.getLogger('event')
-        logger.setLevel(logging.INFO)
-        handler = TimedRotatingFileHandler(self.log_path + 'events.log',
-                                           'midnight')
-        handler.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - ' +
-                                      '%(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        self.logger = logger
-
-    def get_events_logger(self):
-        """
-        Returns the register's events logger
-        """
+    @property
+    def events_logger(self):
         return self.logger
 
-    # -------------------------------------------------------------------------
-    #                           EMPLOYEE HANDLING
-    # -------------------------------------------------------------------------
-    def login_employee(self, token):
+    @property
+    def employee_name(self):
+        if not self.employee:
+            return 'None'
+        else:
+            return self.employee.name
+
+    @property
+    def order(self):
+        return tuple(self.order_dict.items())
+
+    @property
+    def order_total(self):
+        return sum(item.price * quantity for item, quantity in self.order)
+
+    @property
+    def register_count(self):
+        self._verify_credentials(self.employee, 2)
+        return self._register_count
+
+    @staticmethod
+    def create_logger(name, log_path, log_format):
+        """Creates a a rotating logger set to rotate at midnight.
+
+        Parameters
+        ----------
+        name : :class:`str`
+            Logger name.
+        log_path : :class:`str`
+            In which file to save the log.
+        log_format : :class:`str`
+            Logging format.
+
         """
-        Finds and logs in an employee by a token, either a barcode or a
-        permanent code.
+        logger = logging.getLogger(name)
+        logger.setLevel(logging.INFO)
+        handler = TimedRotatingFileHandler(log_path, 'midnight')
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter(log_format)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        return logger
+
+    @staticmethod
+    def find_in_list(items_list, token):
+        """Finds an item in a list by a token.
+
+        The token can either be its barcode or its shortcut.
+
+        Parameters
+        ----------
+        token : :class:`str`
+            Token by which to search the item.
+
+        Raises
+        ------
+        ValueError
+            If the token corresponds to no item in the list.
+
+        """
+        try:
+            return next(
+                i for i in items_list if token in (i.shortcut, i.barcode))
+        except StopIteration:
+            raise ValueError("item not found with token '{}'".format(token))
+
+    def login_employee(self, token):
+        """Finds and logs in an employee via a token.
+
+        The token can either be a barcode or a permanent code.
 
         Parameters
         ----------
         token : str
-            Token by which to search the employee
+            Token by which to search the employee.
+
+        Raises
+        ------
+        CredentialException
+            If the login token corresponds to no employee.
+
         """
-        employee = next((e for e in self.employees if
-                         (e.get_barcode() == token
-                          or e.get_code() == token)),
-                        None)
-        if employee is None:
-            raise CredentialException("invalid employee login")
-        self.employee = employee
-        self.logger.info("logged in employee " + employee.get_name() +
-                         " using token '" + token + "'")
+        try:
+            employee = next(
+                e for e in self.employees if token in (e.barcode, e.code))
+            self.employee = employee
+            self.logger.info("logged in employee '{}' ".format(employee.name) +
+                             "using token '{}'".format(token))
+        except StopIteration:
+            raise CredentialException('invalid employee login')
 
     def logout_employee(self):
-        """
-        Logs out an employee.
-        """
+        """Logs out an employee."""
         employee = self.employee
         self.employee = None
-        self.logger.info("logged out employee " + employee.get_name())
+        self.logger.info("logged out employee '{}'".format(employee.name))
 
-    def get_employee_name(self):
-        """
-        Returns the current employee's name
-        """
-        if self.employee is None:
-            return "None"
-        else:
-            return self.employee.get_name()
-
-    # -------------------------------------------------------------------------
-    #                             ORDER HANDLING
-    # -------------------------------------------------------------------------
     def add(self, token):
-        """
-        Adds an item to the order
+        """Adds an item to the order.
 
         Parameters
         ----------
         token : str
-            Token representing the item to add
+            Token representing the item to add.
+
         """
         self._verify_credentials(self.employee, 0)
         item = self._find_in_menu(token)
         self._add_to_order(item)
 
     def add_custom(self, name, price):
-        """
-        Adds a custom item to the order
+        """Adds a custom item to the order.
 
         Parameters
         ----------
         name : str
-            Name of the custom item
+            Name of the custom item.
         price : int or float
-            Price of the custom item
+            Price of the custom item.
+
         """
         self._verify_credentials(self.employee, 1)
-        check_is_valid_item_name(name)
-        check_is_valid_item_price(price)
-        item = Item(name=name, barcode="custom_" + name, category="Custom",
-                    price=price, shortcut=None)
-        self._add_to_order(item)
+        barcode = 'custom_{}'.format(name)
+        category = 'Custom'
+        shortcut = None
+        validate_item(name, price, barcode, category, shortcut)
+        self._add_to_order(Item(name, price, barcode, category, shortcut))
 
     def remove(self, token):
-        """
-        Removes an item from the current order
+        """Removes an item from the current order.
 
         Parameters
         ----------
         token : str
-            Token representing the item to remove
+            Token representing the item to remove.
+
         """
         self._verify_credentials(self.employee, 0)
         item = self._find_in_order(token)
         self._remove_from_order(item)
 
-    def get_order(self):
-        """
-        Returns a copy of the current order
-        """
-        return copy.deepcopy(self.order)
-
     def clear_order(self):
-        """
-        Clear the register's order.
-        """
+        """Clears the register's order."""
         self._verify_credentials(self.employee, 0)
-        self.order = {}
+        self.order_dict = OrderedDict()
 
     def checkout_order(self):
-        """
-        Adds order total to register count and logs the transaction.
-        """
+        """Adds order total to register count and logs the transaction."""
         self._verify_credentials(self.employee, 1)
-        order_total = reduce(lambda x, y: x + y,
-                             [item.get_price() * quantity for
-                              (item, quantity) in self.order.items()], 0)
-        self._add_to_register_count(order_total)
+        self._add_to_register_count(self.order_total)
         self._log_order()
         self.clear_order()
 
     def order_to_string(self):
-        """
-        Returns a string representation of the current order.
-        """
+        """Returns a string representation of the current order."""
         self._verify_credentials(self.employee, 0)
-        rval = ""
-        for (item, quantity) in self.order.items():
-            rval += item.name + " x " + str(quantity) + "\n"
-        return rval.strip()
+        return '\n'.join('{} x {}'.format(item.name, quantity)
+                         for item, quantity in self.order)
 
-    def get_order_total(self):
-        """
-        Return the current order's total price
-        """
-        return sum(item.get_price() * quantity
-                   for item, quantity in self.order.items())
-
-    # -------------------------------------------------------------------------
-    #                          REGISTER COUNT HANDLING
-    # -------------------------------------------------------------------------
     def count_register(self, count):
-        """
+        """Counts the register.
+
         Compares an employee's register count with the internal count and logs
-        the operation
+        the operation.
 
         Parameters
         ----------
         count : float
-            Employee register count
+            Employee register count.
+
         """
         self._verify_credentials(self.employee, 1)
         self._log_count(count)
-        self.logger.info("employee " + self.get_employee_name() + " counted " +
-                         "the register")
-
-    def get_register_count(self):
-        """
-        Returns the register count.
-        """
-        self._verify_credentials(self.employee, 2)
-        return self.register_count
+        self.logger.info(
+            'employee {} counted the register'.format(self.employee_name))
 
     def adjust(self, amount):
-        """
-        Adjusts the register count
+        """Adjusts the register count.
 
         Parameters
         ----------
-        amount : int or float
-            Adjustment amount
+        amount : number
+            Adjustment amount.
+
         """
         self._verify_credentials(self.employee, 2)
         self._adjust_register_count(amount)
 
-    # -------------------------------------------------------------------------
-    #                             INTERNAL METHODS
-    # -------------------------------------------------------------------------
-    def _find(self, items_list, token):
-        """
-        Finds an item in a list by a token, either its barcode or its
-        shortcut.
-
-        Parameters
-        ----------
-        token : str
-            Token by which to search the item
-        """
-        item = next((i for i in items_list if (i.get_shortcut() == token
-                     or i.get_barcode() == token)), None)
-        if item is None:
-            raise ValueError("item not found with token '" + token + "'")
-        return item
-
     def _find_in_menu(self, token):
-        """
-        Finds an item in the menu by a token, either its barcode or its
-        shortcut.
-
-        Parameters
-        ----------
-        token : str
-            Token by which to search the item
-        """
-        return self._find(self.menu, token)
+        """Finds an item in the menu."""
+        return self.find_in_list(self.menu, token)
 
     def _find_in_order(self, token):
-        """
-        Finds an item in the order by a token, either its barcode or its
-        shortcut.
-
-        Parameters
-        ----------
-        token : str
-            Token by which to search the item
-        """
-        return self._find(self.order.keys(), token)
+        """Finds an item in the order."""
+        return self.find_in_list(list(self.order_dict.keys()), token)
 
     def _verify_credentials(self, employee, authorized_level):
+        """Verifies the credentials of an employee.
+
+        Parameters
+        ----------
+        employee : Employee
+            Employee to verify.
+        authorized_level : :class:`int`
+            Minimum access-granting level.
+
+        Raises
+        ------
+        CredentialException
+            If the employee has unsufficient privileges.
+
+        """
         if employee is None and authorized_level is not None:
-            raise CredentialException("unauthorized operation while no " +
-                                      "employee logged in")
+            raise CredentialException(
+                'unauthorized operation while no employee logged in')
         if employee is not None:
-            employee_level = employee.get_level()
-            if employee_level < authorized_level:
-                raise CredentialException("insufficient privileges for this " +
-                                          "operation")
+            if employee.level < authorized_level:
+                raise CredentialException(
+                    'insufficient privileges for this operation')
 
     def _add_to_order(self, item):
-        """
-        Adds an item to the order.
+        """Adds an item to the order.
 
         Parameters
         ----------
-        item : pyplanck.item.Item
-            Item to add
+        item : Item
+            Item to add.
+
         """
-        if item in self.order:
-            self.order[item] = self.order[item] + 1
+        if item in self.order_dict:
+            self.order_dict[item] += 1
         else:
-            self.order[item] = 1
+            self.order_dict[item] = 1
 
     def _remove_from_order(self, item):
-        """
-        Removes an item from the order.
+        """Removes an item from the order.
 
         Parameters
         ----------
-        item : pyplanck.item.Item
-            Item to remove
+        item : Item
+            Item to remove.
+
+        Raises
+        ------
+        ItemNotFoundException
+            If the item to be removed does not exist in the order.
+
         """
-        if item in self.order:
-            if self.order[item] == 1:
-                del self.order[item]
+        if item in self.order_dict:
+            if self.order_dict[item] == 1:
+                del self.order_dict[item]
             else:
-                self.order[item] = self.order[item] - 1
+                self.order_dict[item] -= 1
         else:
-            raise ItemNotFoundException("item '" + item.name +
-                                        "' not in current order")
+            raise ItemNotFoundException(
+                "item '{}' not in current order".format(item.name))
 
     def _load_menu(self, file_path):
-        """
-        Loads and returns the menu.
+        """Loads and returns the menu.
 
         Parameters
         ----------
-        file_path : str
-            Path to the menu file
+        file_path : :class:`str`
+            Path to the menu file.
+
         """
         menu = []
         with io.open(file_path, encoding='utf-8') as f:
@@ -368,7 +340,7 @@ class Register(object):
             # This flag tells whether the file contains errors
             errors_detected = False
 
-            current_category = "General"
+            current_category = 'General'
             current_default_price = None
 
             # Loop over items and try to add them to the menu as MenuItem
@@ -384,7 +356,7 @@ class Register(object):
                     continue
                 # If '#' is the first character of the line, this is a category
                 # command to set a new category and a new default price.
-                if item[0].startswith("#"):
+                if item[0].startswith('#'):
                     current_category = item[0][1:].strip()
                     try:
                         current_default_price = float(item[1])
@@ -426,25 +398,27 @@ class Register(object):
                         errors_detected = True
                         continue
                     shortcut = item[3]
-                # Add item to menu
-                it = Item(name=name, barcode=barcode, category=category,
-                          price=price, shortcut=shortcut)
-                menu.append(it)
+                try:
+                    validate_item(name, price, barcode, category, shortcut)
+                except ValueError:
+                    errors_detected = True
+                    continue
+                menu.append(Item(name, price, barcode, category, shortcut))
 
         if errors_detected:
-            self.logger.warning("Some lines of the menu contained errors " +
-                                "and were ignored")
+            self.logger.warning('Some lines of the menu contained errors and '
+                                'were ignored')
 
         return list(set(menu))
 
     def _load_employees(self, file_path):
-        """
-        Loads and returns the employees list.
+        """Loads and returns the employees list.
 
         Parameters
         ----------
-        file_path : str
-            Path to the employees file
+        file_path : :class:`str`
+            Path to the employees file.
+
         """
         employees_list = []
 
@@ -469,7 +443,6 @@ class Register(object):
                 employee = [token.strip() for token in employee]
                 # Employees must have four tokens (name, barcode, permanent
                 # code and employee level)
-                # most four (name, barcode, price and shortcut)
                 if len(employee) != 4:
                     errors_detected = True
                     continue
@@ -479,119 +452,117 @@ class Register(object):
                     code = employee[2]
                     try:
                         level = int(employee[3])
+                        validate_employee(name, barcode, code, level)
                     except ValueError:
                         errors_detected = True
                         continue
-                # Add employee to employee list
-                em = Employee(name=name, barcode=barcode, code=code,
-                              level=level)
-                employees_list.append(em)
+                employees_list.append(Employee(name, barcode, code, level))
 
         if errors_detected:
-            self.logger.warning("Some lines of the employee file contained " +
-                                "errors and were ignored")
+            self.logger.warning('Some lines of the employee file contained ' +
+                                'errors and were ignored')
 
         return list(set(employees_list))
 
     def _load_register_count(self, file_path):
-        """
-        Loads and returns the register count.
+        """Loads and returns the register count.
 
         Parameters
         ----------
-        file_path : str
-            Path to the register count file
+        file_path : :class:`str`
+            Path to the register count file.
+
         """
         if not os.path.isfile(file_path):
             register_count = 0.0
             with io.open(file_path, 'wb') as f:
                 data = struct.pack('d', register_count)
                 f.write(data)
-            self.logger.warning("register count file not found, creating " +
-                                "one with value 0.0 at " +
-                                os.path.abspath(file_path))
+            abs_path = os.path.abspath(file_path)
+            self.logger.warning('register count file not found, creating ' +
+                                'one with value 0.0 at '.format(abs_path))
         else:
             with io.open(file_path, 'rb') as f:
                 (register_count, ) = struct.unpack('d', f.read(8))
         return register_count
 
     def _adjust_register_count(self, amount):
-        """
-        Adjusts the register count
+        """Adjusts the register count.
 
         Parameters
         ----------
-        amount : float
-            Adjustment amount
+        amount : number
+            Adjustment amount.
+
         """
-        old_register_count = self.register_count
+        old_register_count = self._register_count
         if amount < 0:
             self._substract_from_register_count(abs(amount))
         else:
             self._add_to_register_count(amount)
-        new_register_count = self.register_count
-        self.count_logger.info(
-            "Adjustment by " + self.get_employee_name() + "\n" +
-            " Old count: %.2f$" % old_register_count + "\n" +
-            " New count: %.2f$" % new_register_count + "\n" +
-            "Difference: %.2f$" % amount
-        )
+        new_register_count = self._register_count
+        message = '\n'.join([
+            'Adjustment by {}'.format(self.employee_name),
+            ' Old count: {:.2f}$'.format(old_register_count),
+            ' New count: {:.2f}$'.format(new_register_count),
+            'Difference: {:.2f}$'.format(amount)])
+        self.count_logger.info(message)
 
     def _add_to_register_count(self, amount):
-        """
-        Adds an amount to the register count.
+        """Adds an amount to the register count.
 
         Parameters
         ----------
-        amount : float
-            Amout to add
+        amount : number
+            Amount to add.
+
         """
-        self.register_count += amount
+        self._register_count += amount
         self._update_register_count()
 
     def _substract_from_register_count(self, amount):
-        """
-        Substracts an amount from the register count.
+        """Substracts an amount from the register count.
 
         Parameters
         ----------
         amount : float
-            Amout to substract
+            Amount to substract.
+
+        Raises
+        ------
+        ValueError
+            If the amount to substract is larger than the register
+            count.
+
         """
+        count = self._register_count
         # The register amount cannot go negative because it is supposed to
         # represent the quantity of physical money in the register.
-        if amount > self.register_count:
-            raise ValueError("cannot substract amount (" + str(amount) + ") " +
-                             "greater than register count (" +
-                             str(self.register_count) + ")")
-        self.register_count -= amount
+        if amount > count:
+            raise ValueError(
+                'cannot substract amount ({:.2f}) '.format(amount) +
+                'greater than register count ({:.2f})'.format(count))
+        self._register_count -= amount
         self._update_register_count()
 
     def _update_register_count(self):
-        """
-        Writes the register count to file in order to have a persistent state.
-        """
+        """Writes the register count to file."""
         with io.open(self.register_count_file_path, 'wb') as f:
-            data = struct.pack('d', self.register_count)
+            data = struct.pack('d', self._register_count)
             f.write(data)
 
     def _log_order(self):
-        """
-        WRITEME
-        """
-        self.transaction_logger.info(
-            self.get_employee_name() + "\n" +
-            self.order_to_string()
-        )
+        """Logs a completed order."""
+        self.transaction_logger.info('{}\n'.format(self.employee_name) +
+                                     self.order_to_string())
 
     def _log_count(self, count):
-        """
-        WRITEME
-        """
-        check_is_valid_count(count)
-        self.count_logger.info(
-            "Count by " + self.get_employee_name() + "\n" +
-            "Employee count: %.2f$" % count + "\n" +
-            "Register count: %.2f$" % self.register_count + "\n" +
-            "      Mismatch: %.2f$" % (count - self.register_count)
-        )
+        """Logs a register count."""
+        validate_amount(count, 'count')
+        mismatch = count - self._register_count
+        message = '\n'.join([
+            'Count by {}'.format(self.employee_name),
+            'Employee count: {:.2f}$'.format(count),
+            'Register count: {:.2f}$'.format(self._register_count),
+            '      Mismatch: {:.2f}$'.format(mismatch)])
+        self.count_logger.info(message)
